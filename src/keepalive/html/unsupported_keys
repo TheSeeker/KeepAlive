@@ -1,0 +1,8 @@
+The following keys can not be reinserted:
+<blockquote>#</blockquote>
+
+This may have one of these reasons:
+<ol>
+    <li>The content is very tiny. There are no CHK blocks that can be reinserted.
+    <li>The key is not yet supported by Keep Alive (May be in the future).
+</ol>

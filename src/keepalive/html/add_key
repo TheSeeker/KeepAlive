@@ -1,0 +1,4 @@
+<form method="POST">
+    Add a key to the task list (USK,SSK,CHK,KSK): <input name="uri" size="60">
+    <input type="submit" value="add key">  
+</form>

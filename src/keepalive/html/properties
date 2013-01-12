@@ -1,0 +1,27 @@
+<form method="POST">
+    <table>
+
+    <tr><td>Power (number of parallel jobs):</td><td>
+    <input name="power" value="#1" size="2">
+    <input type="submit" name="modify_power" value="change"><br>
+    </td></tr>
+
+    <tr><td>Acceptable availability level<br>for segments (%):</td><td>
+    <input name="splitfile_tolerance" value="#3" size="2">
+    <input type="submit" name="modify_splitfile_tolerance" value="change"><br>
+    </td></tr>
+
+    <tr><td>Number of blocks to prove<br>availability of a segment:</td><td>
+    <input name="splitfile_test_size" value="#4" size="2">
+    <input type="submit" name="modify_splitfile_test_size" value="change"><br>
+    </td></tr>
+
+    <tr><td>Log level (0-2):</td><td>
+    <input name="loglevel" value="#2" size="2">
+    <input type="submit" name="modify_loglevel" value="change"><br>
+    <input type="submit" name="master_log" value="show master log"><br>
+    <input type="submit" name="clear_logs" value="clear all logs">
+    </td></tr>
+
+    </table>
+</form>
