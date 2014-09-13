@@ -31,7 +31,7 @@ public class Plugin extends PluginBase {
 
 	public Plugin() {
 		super("KeepAlive", "Keep Alive", "prop.txt");
-		setVersion("0.3.2.2-TS");
+		setVersion("0.3.2.3-TS");
 		addPluginToMenu("Keep Alive", "Reinsert sites and files in the background");
 		clearLog();
 	}
@@ -51,7 +51,7 @@ public class Plugin extends PluginBase {
 				for (int i = 0; i < aIds.length; i++) {
 					setProp("blocks_" + aIds[i], "?");
 				}
-				setProp("version", "0.3.2.2-TS");
+				setProp("version", "0.3.2.3-TS");
 			}
 
 			// initial values

@@ -117,6 +117,11 @@ abstract public class PageBase extends Toadlet implements FredPluginL10n {
 		handleMethodGET(uri, request, ctx);
 	}
 
+	@Override
+	public boolean allowPOSTWithoutPassword() {
+		return true;
+	}
+
 	private String getIdentifier(Message message) throws Exception {
 		try {
 
@@ -183,7 +188,7 @@ abstract public class PageBase extends Toadlet implements FredPluginL10n {
 		}
 	}
 
-	// ********************************************
+    // ********************************************
 	// methods to use in the derived plugin class:
 	// ********************************************
 	// file log

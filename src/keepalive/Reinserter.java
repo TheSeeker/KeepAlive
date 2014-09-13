@@ -357,6 +357,7 @@ public class Reinserter extends Thread {
 						if (nPersistenceRate >= (double) plugin.getIntProp("splitfile_tolerance") / 100.0) {
 							bDoReinsertions = false;
 							segment.regFetchSuccess(nPersistenceRate);
+							updateSegmentStatistic(segment, true);
 							log(segment, "availability of segment ok: " + ((int) (nPersistenceRate * 100)) + "% (exact)", 0, 1);
 							if (cUri.substring(0, 3).equalsIgnoreCase("chk")) {
 								//assume the rest of the segments are OK with the same .
