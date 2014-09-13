@@ -16,117 +16,102 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
-
 package keepalive;
 
 import java.util.Vector;
 
+public class Segment {
 
-public class Segment{
+	private Reinserter reinserter;
+	protected int nId;
+	private int nSize;
+	private int nDataBlocksCount;
+	private Block[] aBlocks;
+	private int nSuccess = 0;
+	private int nFailed = 0;
+	private boolean bPersistenceCheckOk = false;
+	protected boolean bHealingNotPossible = false;
 
-    
-    private Reinserter reinserter;
-    protected int nId;
-    private int nSize;
-    private int nDataBlocksCount;
-    private Block[] aBlocks;
-    private int nSuccess = 0;
-    private int nFailed = 0;
-    private boolean bPersistenceCheckOk = false;
-    protected boolean bHealingNotPossible = false;
+	public Segment(Reinserter reinserter, int nId, int nSize) {
+		this.reinserter = reinserter;
+		this.nId = nId;
+		this.nSize = nSize;
+		aBlocks = new Block[nSize];
+	}
 
-    
-    public Segment (Reinserter reinserter, int nId, int nSize){
-        this.reinserter = reinserter;
-        this.nId = nId;
-        this.nSize = nSize;
-        aBlocks = new Block[nSize];
-    }
+	public void addBlock(Block block) {
+		aBlocks[block.nId] = block;
+		if (block.bIsDataBlock) {
+			nDataBlocksCount++;
+		}
+	}
 
-    
-    public void addBlock(Block block){
-        aBlocks[block.nId] = block;
-        if (block.bIsDataBlock)
-            nDataBlocksCount++;
-    }
+	public Block getBlock(int nId) {
+		return aBlocks[nId];
+	}
 
+	public Block getDataBlock(int nId) {
+		return aBlocks[nId];
+	}
 
-    public Block getBlock(int nId){
-        return aBlocks[nId];
-    }
+	public Block getCheckBlock(int nId) {
+		return aBlocks[dataSize() + nId];
+	}
 
+	public int size() {
+		return nSize;  // aBlocks.length can produce null-exception (see isFinished())
+	}
 
-    public Block getDataBlock(int nId){
-        return aBlocks[nId];
-    }
+	public int dataSize() {
+		return nDataBlocksCount;
+	}
 
+	public int checkSize() {
+		return nSize - nDataBlocksCount;
+	}
 
-    public Block getCheckBlock(int nId){
-        return aBlocks[dataSize()+nId];
-    }
+	public void initInsert() {
+		nSuccess = 0;
+		nFailed = 0;
+	}
 
+	public void regFetchSuccess(double nPersistenceRate) {
+		bPersistenceCheckOk = true;
+		nSuccess = (int) Math.round(nPersistenceRate * nSize);
+		nFailed = nSize - nSuccess;
+		reinserter.updateBlockStatistic(nId, nSuccess, nFailed);
+	}
 
-    public int size(){
-        return nSize;  // aBlocks.length can produce null-exception (see isFinished())
-    }
+	public void regFetchSuccess(boolean bSuccess) {
+		if (bSuccess) {
+			nSuccess++;
+		} else {
+			nFailed++;
+		}
+		reinserter.updateBlockStatistic(nId, nSuccess, nFailed);
+	}
 
+	public boolean isFinished() {
 
-    public int dataSize(){
-        return nDataBlocksCount;
-    }
+		boolean bFinished = true;
+		if (!bPersistenceCheckOk && !bHealingNotPossible) {
+			if (nSize == 1) {
+				bFinished = getBlock(0).bInsertDone;
+			} else {
+				for (int i = 0; i < nSize; i++) {
+					if (!getBlock(i).bFetchSuccessfull && !getBlock(i).bInsertDone) {
+						bFinished = false;
+						break;
+					}
+				}
+			}
+		}
 
+		// free blocks (especially buckets)
+		if (bFinished) {
+			aBlocks = null;
+		}
 
-    public int checkSize(){
-        return nSize-nDataBlocksCount;
-    }
-
-
-    public void initInsert(){
-        nSuccess = 0;
-        nFailed = 0;
-    }
-
-
-    public void regFetchSuccess(double nPersistenceRate){
-        bPersistenceCheckOk = true;
-        nSuccess = (int)Math.round(nPersistenceRate*nSize);
-        nFailed = nSize-nSuccess;
-        reinserter.updateBlockStatistic(nId,nSuccess,nFailed);
-    }
-
-    
-    public void regFetchSuccess(boolean bSuccess){
-        if (bSuccess)
-            nSuccess++;
-        else
-            nFailed++;
-        reinserter.updateBlockStatistic(nId,nSuccess,nFailed);
-    }
-
-    
-    public boolean isFinished(){
-
-        boolean bFinished = true;        
-        if (!bPersistenceCheckOk && !bHealingNotPossible){
-            if (nSize == 1)
-                bFinished = getBlock(0).bInsertDone;
-            else{
-                for (int i=0; i<nSize; i++){
-                    if (!getBlock(i).bFetchSuccessfull && !getBlock(i).bInsertDone){
-                        bFinished = false;
-                        break;
-                    }
-                }
-            }
-        }
-        
-        // free blocks (especially buckets)
-        if (bFinished)
-            aBlocks = null;
-        
-        return bFinished;
-    }
-    
-    
+		return bFinished;
+	}
 }

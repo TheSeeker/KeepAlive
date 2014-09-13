@@ -13,7 +13,6 @@
  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 package pluginbase.de.todesbaum.util.freenet.fcp2;
 
 import java.io.EOFException;
@@ -58,12 +57,9 @@ public class StreamCopier {
 	 * Creates a new StreamCopier with the specified parameters and the default
 	 * buffer size.
 	 *
-	 * @param inputStream
-	 *            The {@link InputStream} to read from
-	 * @param outputStream
-	 *            The {@link OutputStream} to write to
-	 * @param length
-	 *            The number of bytes to copy
+	 * @param inputStream The {@link InputStream} to read from
+	 * @param outputStream The {@link OutputStream} to write to
+	 * @param length The number of bytes to copy
 	 */
 	public StreamCopier(InputStream inputStream, OutputStream outputStream, long length) {
 		this(inputStream, outputStream, length, BUFFER_SIZE);
@@ -73,14 +69,10 @@ public class StreamCopier {
 	 * Creates a new StreamCopier with the specified parameters and the default
 	 * buffer size.
 	 *
-	 * @param inputStream
-	 *            The {@link InputStream} to read from
-	 * @param outputStream
-	 *            The {@link OutputStream} to write to
-	 * @param length
-	 *            The number of bytes to copy
-	 * @param bufferSize
-	 *            The number of bytes to copy at a time
+	 * @param inputStream The {@link InputStream} to read from
+	 * @param outputStream The {@link OutputStream} to write to
+	 * @param length The number of bytes to copy
+	 * @param bufferSize The number of bytes to copy at a time
 	 */
 	public StreamCopier(InputStream inputStream, OutputStream outputStream, long length, int bufferSize) {
 		this.inputStream = inputStream;
@@ -94,47 +86,36 @@ public class StreamCopier {
 	 * requested number of bytes have been read an {@link EOFException} is
 	 * thrown.
 	 *
-	 * @throws EOFException
-	 *             if the input stream is depleted before the requested number
-	 *             of bytes has been read
-	 * @throws IOException
-	 *             if an I/O error occurs
+	 * @throws EOFException if the input stream is depleted before the requested
+	 * number of bytes has been read
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void copy() throws EOFException, IOException {
 		copy(inputStream, outputStream, length, bufferSize);
 	}
 
 	/**
-	 * Copies <code>length</code> bytes from the <code>inputStream</code> to
-	 * the <code>outputStream</code>.
+	 * Copies <code>length</code> bytes from the <code>inputStream</code> to the
+	 * <code>outputStream</code>.
 	 *
-	 * @param inputStream
-	 *            The input stream to read from
-	 * @param outputStream
-	 *            The output stream to write to
-	 * @param length
-	 *            The number of bytes to copy
-	 * @throws IOException
-	 *             if an I/O exception occurs
+	 * @param inputStream The input stream to read from
+	 * @param outputStream The output stream to write to
+	 * @param length The number of bytes to copy
+	 * @throws IOException if an I/O exception occurs
 	 */
 	public static void copy(InputStream inputStream, OutputStream outputStream, long length) throws IOException {
 		copy(inputStream, outputStream, length, BUFFER_SIZE);
 	}
 
 	/**
-	 * Copies <code>length</code> bytes from the <code>inputStream</code> to
-	 * the <code>outputStream</code> using a buffer with the specified size
+	 * Copies <code>length</code> bytes from the <code>inputStream</code> to the
+	 * <code>outputStream</code> using a buffer with the specified size
 	 *
-	 * @param inputStream
-	 *            The input stream to read from
-	 * @param outputStream
-	 *            The output stream to write to
-	 * @param length
-	 *            The number of bytes to copy
-	 * @param bufferSize
-	 *            The size of the copy buffer
-	 * @throws IOException
-	 *             if an I/O exception occurs
+	 * @param inputStream The input stream to read from
+	 * @param outputStream The output stream to write to
+	 * @param length The number of bytes to copy
+	 * @param bufferSize The size of the copy buffer
+	 * @throws IOException if an I/O exception occurs
 	 */
 	public static void copy(InputStream inputStream, OutputStream outputStream, long length, int bufferSize) throws IOException {
 		long remaining = length;

@@ -16,39 +16,32 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
-
 package keepalive;
 
 import freenet.keys.FreenetURI;
 import freenet.support.api.Bucket;
 
-
 public class Block {
-    
-    
-    FreenetURI uri;
-    int nSegmentId;
-    int nId;
-    boolean bIsDataBlock;
-    Bucket bucket;
-    boolean bFetchDone; // done but not necessarily successful
-    boolean bInsertDone; // done but not necessarily successful
-    boolean bFetchSuccessfull;
-    boolean bInsertSuccessfull;
-    String cResultLog;
-    
-    
-    public Block(FreenetURI uri, int nSegmentId, int nId, boolean bIsDataBlock){
-        this.uri = uri;
-        this.nSegmentId = nSegmentId;
-        this.nId = nId;
-        this.bIsDataBlock = bIsDataBlock;
-    }
-    
-    
-    void setResultLog(String cResult){
-        cResultLog = cResult;
-    }
-    
+
+	FreenetURI uri;
+	int nSegmentId;
+	int nId;
+	boolean bIsDataBlock;
+	Bucket bucket;
+	boolean bFetchDone; // done but not necessarily successful
+	boolean bInsertDone; // done but not necessarily successful
+	boolean bFetchSuccessfull;
+	boolean bInsertSuccessfull;
+	String cResultLog;
+
+	public Block(FreenetURI uri, int nSegmentId, int nId, boolean bIsDataBlock) {
+		this.uri = uri;
+		this.nSegmentId = nSegmentId;
+		this.nId = nId;
+		this.bIsDataBlock = bIsDataBlock;
+	}
+
+	void setResultLog(String cResult) {
+		cResultLog = cResult;
+	}
 }

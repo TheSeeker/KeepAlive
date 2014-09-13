@@ -16,8 +16,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
-
 package pluginbase;
 
 import pluginbase.de.todesbaum.util.freenet.fcp2.Connection;
@@ -49,460 +47,419 @@ import java.util.Properties;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
+abstract public class PluginBase implements FredPlugin, FredPluginThreadless, FredPluginVersioned, FredPluginL10n, ConnectionListener {
 
-abstract public class PluginBase implements FredPlugin, FredPluginThreadless, FredPluginVersioned, FredPluginL10n, ConnectionListener{
-    
-    public PageMaker pagemaker;
-    public PluginContext pluginContext;
-    public WebInterface webInterface;
-    public Connection fcpConnection;
-    
-    private Properties prop;
-    LANGUAGE nodeLanguage;
-    TreeMap<String,RandomAccessFile> mLogFiles;
-    boolean bFcpConnection;
+	public PageMaker pagemaker;
+	public PluginContext pluginContext;
+	public WebInterface webInterface;
+	public Connection fcpConnection;
+	private Properties prop;
+	LANGUAGE nodeLanguage;
+	TreeMap<String, RandomAccessFile> mLogFiles;
+	boolean bFcpConnection;
+	TreeMap mPages = new TreeMap();
+	String cTitle;
+	String cPath;
+	String cPropFilename;
+	String cMenuTitle = null;
+	String cMenuTooltip = null;
+	String cVersion = "0.0";
+	SimpleDateFormat dateFormat;
 
-    TreeMap mPages = new TreeMap();
-    String cTitle;
-    String cPath;
-    String cPropFilename;
-    String cMenuTitle = null;
-    String cMenuTooltip = null;
-    String cVersion = "0.0";
-    SimpleDateFormat dateFormat;
-    
-    
-    public PluginBase(String cPath, String cTitle, String cPropFilename, boolean bFcpConnection){
-        try{
-            
-            this.cPath = cPath;
-            this.cTitle = cTitle;
-            this.cPropFilename = cPropFilename;
-            this.bFcpConnection = bFcpConnection;
+	public PluginBase(String cPath, String cTitle, String cPropFilename, boolean bFcpConnection) {
+		try {
 
-            // prepare and clear log file
-            (new File(cPath)).mkdir();
-            mLogFiles = new TreeMap<String,RandomAccessFile>();
-            initLog("log.txt");
-            dateFormat = new SimpleDateFormat("yyyy.MM.dd_HH.mm_ss");    
-            dateFormat.setTimeZone(TimeZone.getDefault());
+			this.cPath = cPath;
+			this.cTitle = cTitle;
+			this.cPropFilename = cPropFilename;
+			this.bFcpConnection = bFcpConnection;
 
-            // load properties
-            loadProp();
-            if (getProp("loglevel") == null)
-                setIntProp("loglevel",0);
-            
-        }catch(Exception e){
-            log("PluginBase(): "+e.getMessage(),1);
-        }        
-    }
-    
-    
-    public PluginBase(String cPath, String cTitle, String cPropFilename){
-        this(cPath,cTitle,cPropFilename,true);
-    }
-    
-    
-    String getCategory(){
-        return cTitle.replaceAll(" ","_");
-    }
-    
-    
-    String getPath(){
-        return "/"+cPath;
-    }
-    
-    
-    public String getPluginDirectory(){
-        return cPath+"/";
-    }
-    
-    
-    public void runPlugin(PluginRespirator pr){          // FredPlugin
-        try{
+			// prepare and clear log file
+			(new File(cPath)).mkdir();
+			mLogFiles = new TreeMap<String, RandomAccessFile>();
+			initLog("log.txt");
+			dateFormat = new SimpleDateFormat("yyyy.MM.dd_HH.mm_ss");
+			dateFormat.setTimeZone(TimeZone.getDefault());
 
-            log(getVersion()+" started");
-            
-            // init plugin context
-            pagemaker = pr.getPageMaker();
-            pluginContext = new PluginContext(pr);
-            webInterface = new WebInterface(pluginContext);
-            
-            // fcp connection
-            connectFcp();
-            
-            // add menu
-            pagemaker.removeNavigationCategory(getCategory());
-            if (cMenuTitle != null)
-                webInterface.addNavigationCategory(getPath()+"/",getCategory(),cMenuTooltip,this);
-            
-        }catch(Exception e){
-            log("PluginBase.runPlugin(): "+e.getMessage(),1);
-        }
-    }
-    
-    
-    public String getVersion(){                         // FredPluginVersioned
-        return cTitle+" "+cVersion;
-    }
+			// load properties
+			loadProp();
+			if (getProp("loglevel") == null) {
+				setIntProp("loglevel", 0);
+			}
 
-    
-    public String getString(String cKey){               // FredPluginL10n
-        return cKey;
-    }
-	
+		} catch (Exception e) {
+			log("PluginBase(): " + e.getMessage(), 1);
+		}
+	}
 
-    public void setLanguage(LANGUAGE language){         // FredPluginL10n
-        nodeLanguage = language;
-    }
-    
-    
-    public void terminate(){                            // FredPlugin
-        try{
-        
-            log("plugin base terminates");
-            saveProp();
-            fcpConnection.disconnect();
-            fcpConnection = null;
-            webInterface.kill();
-            webInterface = null;
-            pagemaker.removeNavigationCategory(getCategory());
-            log("plugin base terminated");
-            for (RandomAccessFile file: mLogFiles.values()){
-                file.close();
-            }    
+	public PluginBase(String cPath, String cTitle, String cPropFilename) {
+		this(cPath, cTitle, cPropFilename, true);
+	}
 
-        }catch(Exception e){
-            log("PluginBase.terminate(): "+e.getMessage(),1);
-        }
-    }
+	String getCategory() {
+		return cTitle.replaceAll(" ", "_");
+	}
 
-    
-    public void messageReceived(Connection connection, Message message){            // ConnectionListener
-        try{
+	String getPath() {
+		return "/" + cPath;
+	}
 
-            // errors
-            if (message.getName().equals("ProtocolError")){
-                log("ProtocolError: "+message.get("CodeDescription"));
-            
-            }else if (message.getName().equals("IdentifierCollision")){
-                log("IdentifierCollision");
+	public String getPluginDirectory() {
+		return cPath + "/";
+	}
 
-            // redirect deprecated usk edition
-            }else if (message.getName().equals("GetFailed") && message.get("RedirectUri") != null && !message.get("RedirectUri").equals("")){
-                log("USK redirected ("+message.getIdentifier()+")");
-                // reg new edition
-                String cPagename = message.getIdentifier().split("_")[0];
-                PageBase page = (PageBase)mPages.get(cPagename);
-                if (page != null)
-                    page.updateRedirectUri(message);
-                // redirect
-                FcpCommands fcpCommand = new FcpCommands(fcpConnection,null);
-                fcpCommand.setCommandName("ClientGet");
-                fcpCommand.field("Identifier",message.getIdentifier());
-                fcpCommand.field("URI",message.get("RedirectUri"));
-                fcpCommand.send();
+	public void runPlugin(PluginRespirator pr) {          // FredPlugin
+		try {
 
-            // register message
-            }else{
-                log("fcp: "+message.getName()+" ("+message.getIdentifier()+")");
-                String cPagename = message.getIdentifier().split("_")[0];
-                PageBase page = (PageBase)mPages.get(cPagename);
-                if (page != null)
-                    page.addMessage(message);
-            }  
-            
-        }catch(Exception e){
-            log("PluginBase.messageReceived(): "+e.getMessage(),1);
-        }
-    }
+			log(getVersion() + " started");
 
-    
-    public void connectionTerminated(Connection connection){                        // ConnectionListener
-        log("fcp connection terminated");
-    }
+			// init plugin context
+			pagemaker = pr.getPageMaker();
+			pluginContext = new PluginContext(pr);
+			webInterface = new WebInterface(pluginContext);
 
-    
-    private synchronized void connectFcp(){
-        try{
-            
-            if (fcpConnection == null || !fcpConnection.isConnected()){
-                fcpConnection = new Connection(new Node("localhost"),"connection_"+System.currentTimeMillis());
-                fcpConnection.addConnectionListener(this);
-                fcpConnection.connect();                
-            } 
-            
-        }catch(Exception e){
-            log("PluginBase.connectFcp(): "+e.getMessage(),1);
-        }
-    }
+			// fcp connection
+			connectFcp();
 
-    
-    private void loadProp(){
-        try{
+			// add menu
+			pagemaker.removeNavigationCategory(getCategory());
+			if (cMenuTitle != null) {
+				webInterface.addNavigationCategory(getPath() + "/", getCategory(), cMenuTooltip, this);
+			}
 
-            if (cPropFilename != null){
-                prop = new Properties();
-                File file = new File(cPath+"/"+cPropFilename);
-                if (file.exists())
-                    prop.load(new FileInputStream(file));
-            }    
-            
-        }catch(Exception e){
-            log("PluginBase.loadProp(): "+e.getMessage(),1);
-        }
-    }
-    
-    
-    // ******************************************
-    // methods to use in the derived page class:
-    // ******************************************
-    
+		} catch (Exception e) {
+			log("PluginBase.runPlugin(): " + e.getMessage(), 1);
+		}
+	}
 
-    // log files
-    
-    private synchronized void initLog(String cFilename){
-        try{
-            
-            if (!mLogFiles.containsKey(cFilename)){
-                RandomAccessFile file = new RandomAccessFile(cPath+"/"+cFilename,"rw");
-                file.seek(file.length());
-                mLogFiles.put(cFilename,file);
-            }    
-            
-        }catch(Exception e){
-            log("PluginBase.initLog(): "+e.getMessage());
-        }
-    }
-    
-    
-    public synchronized void log(String cFilename, String cText, int nLogLevel){
-        try{
-            
-            if (nLogLevel <= getIntProp("loglevel")){
-                initLog(cFilename);                
-                mLogFiles.get(cFilename).writeBytes(dateFormat.format(new Date())+"  "+cText+"\n");
-            }    
-            
-        }catch(Exception e){
-            if (!cFilename.equals("log.txt"))  // to avoid infinite loop when log.txt was closed on shutdown
-                log("PluginBase.log(): "+e.getMessage());
-        }    
-    }
-    
-    
-    public void log(String cFilename, String cText){
-        log(cFilename,cText,0);
-    }
-    
-    
-    public synchronized String getLog(String cFilename){
-        try{
-            
-            initLog(cFilename);
-            RandomAccessFile file = mLogFiles.get(cFilename);
-            file.seek(0);
-            StringBuffer buffer = new StringBuffer();
-            String cLine;
-            while ((cLine = file.readLine()) != null){
-                buffer.append(cLine+"\n");
-            }
-            return buffer.toString();
+	public String getVersion() {                         // FredPluginVersioned
+		return cTitle + " " + cVersion;
+	}
 
-        }catch(Exception e){
-            log("PluginBase.getLog(): "+e.getMessage());
-            return null;
-        }
-    }
-    
-    
-    public void clearLog(String cFilename){
-        try{
-            
-            initLog(cFilename);
-            mLogFiles.get(cFilename).setLength(0);
-            
-        }catch(Exception e){
-            log("PluginBase.clearLog(): "+e.getMessage());
-        }
-    }
-    
-    
-    public void clearAllLogs(){
-        try{
+	public String getString(String cKey) {               // FredPluginL10n
+		return cKey;
+	}
 
-            for (RandomAccessFile file: mLogFiles.values()){
-                file.setLength(0);
-            }    
-    
-        }catch(Exception e){
-            log("PluginBase.clearAllLogs(): "+e.getMessage());
-        }
-    }
-    
-    
-    public void setLogLevel(int nLevel) throws Exception{
-        try{
-            
-            setIntProp("loglevel",nLevel);
-            
-        }catch(Exception e){
-            throw new Exception("PluginBase.setLogLevel(): "+e.getMessage());
-        }
-    }
+	public void setLanguage(LANGUAGE language) {         // FredPluginL10n
+		nodeLanguage = language;
+	}
 
-    
-    // standard log
-    
-    public void log(String cText){
-        log("log.txt",cText,0);
-    }
+	public void terminate() {                            // FredPlugin
+		try {
 
-    
-    public void log(String cText, int nLogLevel){
-        log("log.txt",cText,nLogLevel);
-    }
+			log("plugin base terminates");
+			saveProp();
+			fcpConnection.disconnect();
+			fcpConnection = null;
+			webInterface.kill();
+			webInterface = null;
+			pagemaker.removeNavigationCategory(getCategory());
+			log("plugin base terminated");
+			for (RandomAccessFile file : mLogFiles.values()) {
+				file.close();
+			}
 
-    
-    public void clearLog(){
-        clearLog("log.txt");
-    }   
-    
-    
-    public String getLog(){
-        return getLog("log.txt");
-    }   
-    
-    
-    // methods to set the version of the plugin
-    
-    protected void setVersion(String cVersion){
-        this.cVersion = cVersion;
-    }
-    
-    
-    // methods to add the plugin to the nodes' main menu (fproxy)
-    
-    protected void addPluginToMenu(String cMenuTitle, String cMenuTooltip){
-        this.cMenuTitle = cMenuTitle;
-        this.cMenuTooltip = cMenuTooltip;
-    }
-    
-    
-    // methods to add menu items to the plugins menu (fproxy)
-    
-    protected void addMenuItem(String cTitle, String cTooltip, String cUri, boolean bFullAccessHostsOnly){
-        try{
-            
-            pagemaker.addNavigationLink(getCategory(),cUri,cTitle,cTooltip,bFullAccessHostsOnly,null,this);
-            log("item '"+cTitle+"' added to menu");
+		} catch (Exception e) {
+			log("PluginBase.terminate(): " + e.getMessage(), 1);
+		}
+	}
 
-        }catch(Exception e){
-            log("PluginBase.addMenuItem(): "+e.getMessage());
-        }
-    }
-    
-    
-    // methods to build the plugin
+	public void messageReceived(Connection connection, Message message) {            // ConnectionListener
+		try {
 
-    protected void addPage(PageBase page){
-        try{
-            
-            mPages.put(page.getName(),page);
+			// errors
+			if (message.getName().equals("ProtocolError")) {
+				log("ProtocolError: " + message.get("CodeDescription"));
 
-        }catch(Exception e){
-            log("PluginBase.addPage(): "+e.getMessage());
-        }
-    }
-    
+			} else if (message.getName().equals("IdentifierCollision")) {
+				log("IdentifierCollision");
 
-    // methods to set and get persistent properties
-     
-    public synchronized void saveProp(){
-        try{
-            
-            if (prop != null){
-                File file = new File(cPath+"/"+cPropFilename);
-                if (file.exists())
-                    file.delete();
-                FileOutputStream stream = new FileOutputStream(file);
-                prop.store(stream,cTitle);
-                stream.close();
-            }    
-            
-        }catch(Exception e){
-            log("PluginBase.saveProp(): "+e.getMessage());
-        }
-    }
+				// redirect deprecated usk edition
+			} else if (message.getName().equals("GetFailed") && message.get("RedirectUri") != null && !message.get("RedirectUri").equals("")) {
+				log("USK redirected (" + message.getIdentifier() + ")");
+				// reg new edition
+				String cPagename = message.getIdentifier().split("_")[0];
+				PageBase page = (PageBase) mPages.get(cPagename);
+				if (page != null) {
+					page.updateRedirectUri(message);
+				}
+				// redirect
+				FcpCommands fcpCommand = new FcpCommands(fcpConnection, null);
+				fcpCommand.setCommandName("ClientGet");
+				fcpCommand.field("Identifier", message.getIdentifier());
+				fcpCommand.field("URI", message.get("RedirectUri"));
+				fcpCommand.send();
 
-    
-    public void setProp(String cKey, String cValue) throws Exception{
-        try{
-            
-            prop.setProperty(cKey,cValue);
-            
-        }catch(Exception e){
-            throw new Exception("PluginBase.setProp(): "+e.getMessage());
-        }
-    }
-    
-    
-    public String getProp(String cKey) throws Exception{
-        try{
+				// register message
+			} else {
+				log("fcp: " + message.getName() + " (" + message.getIdentifier() + ")");
+				String cPagename = message.getIdentifier().split("_")[0];
+				PageBase page = (PageBase) mPages.get(cPagename);
+				if (page != null) {
+					page.addMessage(message);
+				}
+			}
 
-            return prop.getProperty(cKey);
-            
-        }catch(Exception e){
-            throw new Exception("PluginBase.getProp(): "+e.getMessage());
-        }
-    }
-    
-    
-    public void setIntProp(String cKey, int nValue) throws Exception{
-        try{
-            
-            prop.setProperty(cKey,String.valueOf(nValue));
+		} catch (Exception e) {
+			log("PluginBase.messageReceived(): " + e.getMessage(), 1);
+		}
+	}
 
-        }catch(Exception e){
-            throw new Exception("PluginBase.setIntProp(): "+e.getMessage());
-        }
-    }
-    
-    
-    public int getIntProp(String cKey) throws Exception{
-        try{
-        
-            String cValue = getProp(cKey);
-            if (cValue != null && !cValue.equals(""))
-                return Integer.parseInt(cValue);
-            else
-                return 0;
+	public void connectionTerminated(Connection connection) {                        // ConnectionListener
+		log("fcp connection terminated");
+	}
 
-        }catch(Exception e){
-            throw new Exception("PluginBase.getIntProp(): "+e.getMessage());
-        }
-    }
-    
-    
-    public void removeProp(String cKey){
-        try{
-        
-            prop.remove(cKey);
+	private synchronized void connectFcp() {
+		try {
 
-        }catch(Exception e){
-            log("PluginBase.removeProp(): "+e.getMessage());
-        }
-    }
-    
-    
-    public void clearProp(){
-        prop.clear();
-    }
+			if (fcpConnection == null || !fcpConnection.isConnected()) {
+				fcpConnection = new Connection(new Node("localhost"), "connection_" + System.currentTimeMillis());
+				fcpConnection.addConnectionListener(this);
+				fcpConnection.connect();
+			}
 
-    
-    public void setTimezoneUTC(){
-        dateFormat = new SimpleDateFormat("yyyy.MM.dd_HH.mm_ss");    
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-    }    
+		} catch (Exception e) {
+			log("PluginBase.connectFcp(): " + e.getMessage(), 1);
+		}
+	}
 
+	private void loadProp() {
+		try {
+
+			if (cPropFilename != null) {
+				prop = new Properties();
+				File file = new File(cPath + "/" + cPropFilename);
+				if (file.exists()) {
+					prop.load(new FileInputStream(file));
+				}
+			}
+
+		} catch (Exception e) {
+			log("PluginBase.loadProp(): " + e.getMessage(), 1);
+		}
+	}
+
+	// ******************************************
+	// methods to use in the derived page class:
+	// ******************************************
+	// log files
+	private synchronized void initLog(String cFilename) {
+		try {
+
+			if (!mLogFiles.containsKey(cFilename)) {
+				RandomAccessFile file = new RandomAccessFile(cPath + "/" + cFilename, "rw");
+				file.seek(file.length());
+				mLogFiles.put(cFilename, file);
+			}
+
+		} catch (Exception e) {
+			log("PluginBase.initLog(): " + e.getMessage());
+		}
+	}
+
+	public synchronized void log(String cFilename, String cText, int nLogLevel) {
+		try {
+
+			if (nLogLevel <= getIntProp("loglevel")) {
+				initLog(cFilename);
+				mLogFiles.get(cFilename).writeBytes(dateFormat.format(new Date()) + "  " + cText + "\n");
+			}
+
+		} catch (Exception e) {
+			if (!cFilename.equals("log.txt")) // to avoid infinite loop when log.txt was closed on shutdown
+			{
+				log("PluginBase.log(): " + e.getMessage());
+			}
+		}
+	}
+
+	public void log(String cFilename, String cText) {
+		log(cFilename, cText, 0);
+	}
+
+	public synchronized String getLog(String cFilename) {
+		try {
+
+			initLog(cFilename);
+			RandomAccessFile file = mLogFiles.get(cFilename);
+			file.seek(0);
+			StringBuffer buffer = new StringBuffer();
+			String cLine;
+			while ((cLine = file.readLine()) != null) {
+				buffer.append(cLine + "\n");
+			}
+			return buffer.toString();
+
+		} catch (Exception e) {
+			log("PluginBase.getLog(): " + e.getMessage());
+			return null;
+		}
+	}
+
+	public void clearLog(String cFilename) {
+		try {
+
+			initLog(cFilename);
+			mLogFiles.get(cFilename).setLength(0);
+
+		} catch (Exception e) {
+			log("PluginBase.clearLog(): " + e.getMessage());
+		}
+	}
+
+	public void clearAllLogs() {
+		try {
+
+			for (RandomAccessFile file : mLogFiles.values()) {
+				file.setLength(0);
+			}
+
+		} catch (Exception e) {
+			log("PluginBase.clearAllLogs(): " + e.getMessage());
+		}
+	}
+
+	public void setLogLevel(int nLevel) throws Exception {
+		try {
+
+			setIntProp("loglevel", nLevel);
+
+		} catch (Exception e) {
+			throw new Exception("PluginBase.setLogLevel(): " + e.getMessage());
+		}
+	}
+
+	// standard log
+	public void log(String cText) {
+		log("log.txt", cText, 0);
+	}
+
+	public void log(String cText, int nLogLevel) {
+		log("log.txt", cText, nLogLevel);
+	}
+
+	public void clearLog() {
+		clearLog("log.txt");
+	}
+
+	public String getLog() {
+		return getLog("log.txt");
+	}
+
+	// methods to set the version of the plugin
+	protected void setVersion(String cVersion) {
+		this.cVersion = cVersion;
+	}
+
+	// methods to add the plugin to the nodes' main menu (fproxy)
+	protected void addPluginToMenu(String cMenuTitle, String cMenuTooltip) {
+		this.cMenuTitle = cMenuTitle;
+		this.cMenuTooltip = cMenuTooltip;
+	}
+
+	// methods to add menu items to the plugins menu (fproxy)
+	protected void addMenuItem(String cTitle, String cTooltip, String cUri, boolean bFullAccessHostsOnly) {
+		try {
+
+			pagemaker.addNavigationLink(getCategory(), cUri, cTitle, cTooltip, bFullAccessHostsOnly, null, this);
+			log("item '" + cTitle + "' added to menu");
+
+		} catch (Exception e) {
+			log("PluginBase.addMenuItem(): " + e.getMessage());
+		}
+	}
+
+	// methods to build the plugin
+	protected void addPage(PageBase page) {
+		try {
+
+			mPages.put(page.getName(), page);
+
+		} catch (Exception e) {
+			log("PluginBase.addPage(): " + e.getMessage());
+		}
+	}
+
+	// methods to set and get persistent properties
+	public synchronized void saveProp() {
+		try {
+
+			if (prop != null) {
+				File file = new File(cPath + "/" + cPropFilename);
+				if (file.exists()) {
+					file.delete();
+				}
+				FileOutputStream stream = new FileOutputStream(file);
+				prop.store(stream, cTitle);
+				stream.close();
+			}
+
+		} catch (Exception e) {
+			log("PluginBase.saveProp(): " + e.getMessage());
+		}
+	}
+
+	public void setProp(String cKey, String cValue) throws Exception {
+		try {
+
+			prop.setProperty(cKey, cValue);
+
+		} catch (Exception e) {
+			throw new Exception("PluginBase.setProp(): " + e.getMessage());
+		}
+	}
+
+	public String getProp(String cKey) throws Exception {
+		try {
+
+			return prop.getProperty(cKey);
+
+		} catch (Exception e) {
+			throw new Exception("PluginBase.getProp(): " + e.getMessage());
+		}
+	}
+
+	public void setIntProp(String cKey, int nValue) throws Exception {
+		try {
+
+			prop.setProperty(cKey, String.valueOf(nValue));
+
+		} catch (Exception e) {
+			throw new Exception("PluginBase.setIntProp(): " + e.getMessage());
+		}
+	}
+
+	public int getIntProp(String cKey) throws Exception {
+		try {
+
+			String cValue = getProp(cKey);
+			if (cValue != null && !cValue.equals("")) {
+				return Integer.parseInt(cValue);
+			} else {
+				return 0;
+			}
+
+		} catch (Exception e) {
+			throw new Exception("PluginBase.getIntProp(): " + e.getMessage());
+		}
+	}
+
+	public void removeProp(String cKey) {
+		try {
+
+			prop.remove(cKey);
+
+		} catch (Exception e) {
+			log("PluginBase.removeProp(): " + e.getMessage());
+		}
+	}
+
+	public void clearProp() {
+		prop.clear();
+	}
+
+	public void setTimezoneUTC() {
+		dateFormat = new SimpleDateFormat("yyyy.MM.dd_HH.mm_ss");
+		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+	}
 }

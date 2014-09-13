@@ -16,7 +16,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 package pluginbase.de.todesbaum.util.freenet.fcp2;
 
 import java.io.InputStream;
@@ -37,23 +36,30 @@ import java.util.Map.Entry;
  */
 public class Message {
 
-	/** The name of this message. */
+	/**
+	 * The name of this message.
+	 */
 	private final String name;
 
-	/** The identifier of this message. */
+	/**
+	 * The identifier of this message.
+	 */
 	private String identifier = "";
 
-	/** The parameters of this message. */
+	/**
+	 * The parameters of this message.
+	 */
 	private Map<String, String> parameters = new HashMap<String, String>();
 
-	/** The payload. */
+	/**
+	 * The payload.
+	 */
 	private InputStream payloadInputStream;
 
 	/**
 	 * Creates a new message with the specified name.
 	 *
-	 * @param name
-	 *            The name of this message
+	 * @param name The name of this message
 	 */
 	public Message(String name) {
 		this.name = name;
@@ -71,8 +77,7 @@ public class Message {
 	/**
 	 * Sets the identifier of this message.
 	 *
-	 * @param identifier
-	 *            The identifier of this message
+	 * @param identifier The identifier of this message
 	 */
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
@@ -91,10 +96,9 @@ public class Message {
 	 * Tests whether this message contains the parameter with the specified key.
 	 * Key names are compared ignoring case.
 	 *
-	 * @param key
-	 *            The name of the parameter
+	 * @param key The name of the parameter
 	 * @return <code>true</code> if this parameter exists in this message,
-	 *         <code>false</code> otherwise
+	 * <code>false</code> otherwise
 	 */
 	public boolean containsKey(String key) {
 		return parameters.containsKey(key.toLowerCase());
@@ -115,8 +119,7 @@ public class Message {
 	 * Returns the value of the parameter with the name specified by
 	 * <code>key</code>.
 	 *
-	 * @param key
-	 *            The name of the parameter
+	 * @param key The name of the parameter
 	 * @return The value of the parameter
 	 */
 	public String get(String key) {
@@ -127,12 +130,10 @@ public class Message {
 	 * Stores the specified value as parameter with the name specified by
 	 * <code>key</code>.
 	 *
-	 * @param key
-	 *            The name of the parameter
-	 * @param value
-	 *            The value of the parameter
-	 * @return The previous value, or <code>null</code> if there was no
-	 *         previous value
+	 * @param key The name of the parameter
+	 * @param value The value of the parameter
+	 * @return The previous value, or <code>null</code> if there was no previous
+	 * value
 	 */
 	public String put(String key, String value) {
 		return parameters.put(key.toLowerCase(), value);
@@ -155,8 +156,7 @@ public class Message {
 	}
 
 	/**
-	 * @param payloadInputStream
-	 *            The payloadInputStream to set.
+	 * @param payloadInputStream The payloadInputStream to set.
 	 */
 	public void setPayloadInputStream(InputStream payloadInputStream) {
 		this.payloadInputStream = payloadInputStream;

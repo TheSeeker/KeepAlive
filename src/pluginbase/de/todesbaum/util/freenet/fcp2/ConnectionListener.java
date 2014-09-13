@@ -16,7 +16,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 package pluginbase.de.todesbaum.util.freenet.fcp2;
 
 import java.util.EventListener;
@@ -32,18 +31,15 @@ public interface ConnectionListener extends EventListener {
 	/**
 	 * Notifies a client that a message was received.
 	 *
-	 * @param connection
-	 *            The connection the message was received on
-	 * @param message
-	 *            The message that was received
+	 * @param connection The connection the message was received on
+	 * @param message The message that was received
 	 */
 	public void messageReceived(Connection connection, Message message);
 
 	/**
 	 * Notifies a client that the connection to the node has been lost.
 	 *
-	 * @param connection
-	 *            The connection that was lost
+	 * @param connection The connection that was lost
 	 */
 	public void connectionTerminated(Connection connection);
 

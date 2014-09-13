@@ -16,7 +16,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 package pluginbase.de.todesbaum.util.freenet.fcp2;
 
 import java.io.IOException;
@@ -39,7 +38,9 @@ import java.io.Writer;
  */
 public abstract class Command {
 
-	/** The line feed sequence used by the library. */
+	/**
+	 * The line feed sequence used by the library.
+	 */
 	protected static final String LINEFEED = "\r\n";
 
 	/**
@@ -57,10 +58,8 @@ public abstract class Command {
 	/**
 	 * Creates a new command with the specified name and identifier.
 	 *
-	 * @param name
-	 *            The name of the command
-	 * @param identifier
-	 *            The identifier of the command
+	 * @param name The name of the command
+	 * @param identifier The identifier of the command
 	 */
 	public Command(String name, String identifier) {
 		this.commandName = name;
@@ -92,14 +91,13 @@ public abstract class Command {
 	 * <code>super.write(writer)</code> before or after writing their own
 	 * parameters!
 	 *
-	 * @param writer
-	 *            The stream to write the parameters to
-	 * @throws IOException
-	 *             if an I/O error occurs
+	 * @param writer The stream to write the parameters to
+	 * @throws IOException if an I/O error occurs
 	 */
 	protected void write(Writer writer) throws IOException {
-		if (identifier != null)
+		if (identifier != null) {
 			writer.write("Identifier=" + identifier + LINEFEED);
+		}
 	}
 
 	/**
@@ -108,7 +106,7 @@ public abstract class Command {
 	 * payload after the message.
 	 *
 	 * @return <code>true</code> if this command has payload to send,
-	 *         <code>false</code> otherwise
+	 * <code>false</code> otherwise
 	 */
 	protected boolean hasPayload() {
 		return false;

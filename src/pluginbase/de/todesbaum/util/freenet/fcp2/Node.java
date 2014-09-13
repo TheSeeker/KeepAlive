@@ -16,7 +16,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 package pluginbase.de.todesbaum.util.freenet.fcp2;
 
 /**
@@ -27,21 +26,26 @@ package pluginbase.de.todesbaum.util.freenet.fcp2;
  */
 public class Node {
 
-	/** The default port of FCPv2. */
+	/**
+	 * The default port of FCPv2.
+	 */
 	public static final int DEFAULT_PORT = 9481;
 
-	/** The hostname of the node. */
+	/**
+	 * The hostname of the node.
+	 */
 	protected String hostname;
 
-	/** The port number of the node. */
+	/**
+	 * The port number of the node.
+	 */
 	protected int port;
 
 	/**
 	 * Creates a new node with the specified hostname and the default port
 	 * number.
 	 *
-	 * @param hostname
-	 *            The hostname of the node
+	 * @param hostname The hostname of the node
 	 * @see #DEFAULT_PORT
 	 */
 	public Node(String hostname) {
@@ -51,10 +55,8 @@ public class Node {
 	/**
 	 * Creates a new node with the specified hostname and port number.
 	 *
-	 * @param hostname
-	 *            The hostname of the node
-	 * @param port
-	 *            The port number of the node
+	 * @param hostname The hostname of the node
+	 * @param port The port number of the node
 	 */
 	public Node(String hostname, int port) {
 		this.hostname = hostname;

@@ -16,7 +16,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 package pluginbase.de.todesbaum.util.freenet.fcp2;
 
 import java.io.File;
@@ -44,43 +43,61 @@ import pluginbase.de.todesbaum.util.freenet.fcp2.TempFileInputStream;
  */
 public class Connection {
 
-	/** The listeners that receive events from this connection. */
+	/**
+	 * The listeners that receive events from this connection.
+	 */
 	private List<ConnectionListener> connectionListeners = new ArrayList<ConnectionListener>();
 
-	/** The node this connection is connected to. */
+	/**
+	 * The node this connection is connected to.
+	 */
 	private final Node node;
 
-	/** The name of this connection. */
+	/**
+	 * The name of this connection.
+	 */
 	private final String name;
 
-	/** The network socket of this connection. */
+	/**
+	 * The network socket of this connection.
+	 */
 	private Socket nodeSocket;
 
-	/** The input stream that reads from the socket. */
+	/**
+	 * The input stream that reads from the socket.
+	 */
 	private InputStream nodeInputStream;
 
-	/** The output stream that writes to the socket. */
+	/**
+	 * The output stream that writes to the socket.
+	 */
 	private OutputStream nodeOutputStream;
 
-	/** The thread that reads from the socket. */
+	/**
+	 * The thread that reads from the socket.
+	 */
 	private NodeReader nodeReader;
 
-	/** A writer for the output stream. */
+	/**
+	 * A writer for the output stream.
+	 */
 	private Writer nodeWriter;
 
-	/** The NodeHello message sent by the node on connect. */
+	/**
+	 * The NodeHello message sent by the node on connect.
+	 */
 	protected Message nodeHello;
 
-	/** The temp directory to use. */
+	/**
+	 * The temp directory to use.
+	 */
 	private String tempDirectory;
 
 	/**
 	 * Creates a new connection to the specified node with the specified name.
 	 *
-	 * @param node
-	 *            The node to connect to
-	 * @param name
-	 *            The name of this connection
+	 * @param node The node to connect to
+	 * @param name The name of this connection
 	 */
 	public Connection(Node node, String name) {
 		this.node = node;
@@ -90,8 +107,7 @@ public class Connection {
 	/**
 	 * Adds a listener that gets notified on connection events.
 	 *
-	 * @param connectionListener
-	 *            The listener to add
+	 * @param connectionListener The listener to add
 	 */
 	public void addConnectionListener(ConnectionListener connectionListener) {
 		connectionListeners.add(connectionListener);
@@ -101,8 +117,7 @@ public class Connection {
 	 * Removes a listener from the list of registered listeners. Only the first
 	 * matching listener is removed.
 	 *
-	 * @param connectionListener
-	 *            The listener to remove
+	 * @param connectionListener The listener to remove
 	 * @see List#remove(java.lang.Object)
 	 */
 	public void removeConnectionListener(ConnectionListener connectionListener) {
@@ -112,8 +127,7 @@ public class Connection {
 	/**
 	 * Notifies listeners about a received message.
 	 *
-	 * @param message
-	 *            The received message
+	 * @param message The received message
 	 */
 	protected void fireMessageReceived(Message message) {
 		for (ConnectionListener connectionListener : connectionListeners) {
@@ -142,9 +156,8 @@ public class Connection {
 	/**
 	 * Sets the temp directory to use for creation of temporary files.
 	 *
-	 * @param tempDirectory
-	 *            The temp directory to use, or {@code null} to use the default
-	 *            temp directory
+	 * @param tempDirectory The temp directory to use, or {@code null} to use
+	 * the default temp directory
 	 */
 	public void setTempDirectory(String tempDirectory) {
 		this.tempDirectory = tempDirectory;
@@ -154,9 +167,8 @@ public class Connection {
 	 * Connects to the node.
 	 *
 	 * @return <code>true</code> if the connection succeeded and the node
-	 *         returned a NodeHello message
-	 * @throws IOException
-	 *             if an I/O error occurs
+	 * returned a NodeHello message
+	 * @throws IOException if an I/O error occurs
 	 * @see #getNodeHello()
 	 */
 	public synchronized boolean connect() throws IOException {
@@ -196,7 +208,7 @@ public class Connection {
 	 * Returns whether this connection is still connected to the node.
 	 *
 	 * @return <code>true</code> if this connection is still valid,
-	 *         <code>false</code> otherwise
+	 * <code>false</code> otherwise
 	 */
 	public boolean isConnected() {
 		return (nodeHello != null) && (nodeSocket != null) && (nodeSocket.isConnected());
@@ -252,12 +264,9 @@ public class Connection {
 	/**
 	 * Executes the specified command.
 	 *
-	 * @param command
-	 *            The command to execute
-	 * @throws IllegalStateException
-	 *             if the connection is not connected
-	 * @throws IOException
-	 *             if an I/O error occurs
+	 * @param command The command to execute
+	 * @throws IllegalStateException if the connection is not connected
+	 * @throws IOException if an I/O error occurs
 	 */
 	public synchronized void execute(Command command) throws IllegalStateException, IOException {
 		if (nodeSocket == null) {
@@ -289,15 +298,16 @@ public class Connection {
 	 */
 	protected class NodeReader implements Runnable {        // changed by jeriadoc 11/2011: private -> protected
 
-		/** The input stream to read from. */
+		/**
+		 * The input stream to read from.
+		 */
 		@SuppressWarnings("hiding")
 		private InputStream nodeInputStream;
 
 		/**
 		 * Creates a new reader that reads from the specified input stream.
 		 *
-		 * @param nodeInputStream
-		 *            The input stream to read from
+		 * @param nodeInputStream The input stream to read from
 		 */
 		public NodeReader(InputStream nodeInputStream) {
 			this.nodeInputStream = nodeInputStream;

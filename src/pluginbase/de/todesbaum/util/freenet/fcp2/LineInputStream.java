@@ -18,13 +18,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 package pluginbase.de.todesbaum.util.freenet.fcp2;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 
 /**
  * @author David Roden &lt;droden@gmail.com&gt;
@@ -42,29 +40,30 @@ public class LineInputStream extends FilterInputStream {
 		super(in);
 	}
 
-	public synchronized String readLine(){
-            try{
-		lineBuffer.setLength(0);
-		int c = 0;
-		while (c != -1) {
-			c = read();
-			if ((c == -1) && lineBuffer.length() == 0){
-				return null;
-                        }if (skipLinefeed && (c == '\n')) {
-				skipLinefeed = false;
-				continue;
+	public synchronized String readLine() {
+		try {
+			lineBuffer.setLength(0);
+			int c = 0;
+			while (c != -1) {
+				c = read();
+				if ((c == -1) && lineBuffer.length() == 0) {
+					return null;
+				}
+				if (skipLinefeed && (c == '\n')) {
+					skipLinefeed = false;
+					continue;
+				}
+				skipLinefeed = (c == '\r');
+				if ((c == '\r') || (c == '\n')) {
+					c = -1;
+				} else {
+					lineBuffer.append((char) c);
+				}
 			}
-			skipLinefeed = (c == '\r');
-			if ((c == '\r') || (c == '\n')) {
-				c = -1;
-			} else {
-				lineBuffer.append((char) c);
-			}
+			return lineBuffer.toString();
+		} catch (Exception e) {
+			return null;
 		}
-		return lineBuffer.toString();
-            }catch(Exception e){
-                return null;
-            }   
 	}
-        
+
 }

@@ -15,7 +15,6 @@
  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 package pluginbase.de.todesbaum.util.freenet.fcp2;
 
 import java.io.IOException;
@@ -37,7 +36,7 @@ import java.sql.Statement;
  * method of the respective type.
  *
  * @author <a href="mailto:bombe@freenetproject.org">David &lsquo;Bombe&squo;
- *         Roden</a>
+ * Roden</a>
  * @version $Id$
  */
 public class Closer {
@@ -45,8 +44,7 @@ public class Closer {
 	/**
 	 * Closes the given result set.
 	 *
-	 * @param resultSet
-	 *            The result set to close
+	 * @param resultSet The result set to close
 	 * @see ResultSet#close()
 	 */
 	public static void close(ResultSet resultSet) {
@@ -61,8 +59,7 @@ public class Closer {
 	/**
 	 * Closes the given statement.
 	 *
-	 * @param statement
-	 *            The statement to close
+	 * @param statement The statement to close
 	 * @see Statement#close()
 	 */
 	public static void close(Statement statement) {
@@ -77,8 +74,7 @@ public class Closer {
 	/**
 	 * Closes the given connection.
 	 *
-	 * @param connection
-	 *            The connection to close
+	 * @param connection The connection to close
 	 * @see Connection#close()
 	 */
 	public static void close(Connection connection) {
@@ -93,8 +89,7 @@ public class Closer {
 	/**
 	 * Closes the given server socket.
 	 *
-	 * @param serverSocket
-	 *            The server socket to close
+	 * @param serverSocket The server socket to close
 	 * @see ServerSocket#close()
 	 */
 	public static void close(ServerSocket serverSocket) {
@@ -109,8 +104,7 @@ public class Closer {
 	/**
 	 * Closes the given socket.
 	 *
-	 * @param socket
-	 *            The socket to close
+	 * @param socket The socket to close
 	 * @see Socket#close()
 	 */
 	public static void close(Socket socket) {
@@ -125,8 +119,7 @@ public class Closer {
 	/**
 	 * Closes the given input stream.
 	 *
-	 * @param inputStream
-	 *            The input stream to close
+	 * @param inputStream The input stream to close
 	 * @see InputStream#close()
 	 */
 	public static void close(InputStream inputStream) {
@@ -141,8 +134,7 @@ public class Closer {
 	/**
 	 * Closes the given output stream.
 	 *
-	 * @param outputStream
-	 *            The output stream to close
+	 * @param outputStream The output stream to close
 	 * @see OutputStream#close()
 	 */
 	public static void close(OutputStream outputStream) {
@@ -157,8 +149,7 @@ public class Closer {
 	/**
 	 * Closes the given reader.
 	 *
-	 * @param reader
-	 *            The reader to close
+	 * @param reader The reader to close
 	 * @see Reader#close()
 	 */
 	public static void close(Reader reader) {
@@ -173,8 +164,7 @@ public class Closer {
 	/**
 	 * Closes the given writer.
 	 *
-	 * @param writer
-	 *            The write to close
+	 * @param writer The write to close
 	 * @see Writer#close()
 	 */
 	public static void close(Writer writer) {

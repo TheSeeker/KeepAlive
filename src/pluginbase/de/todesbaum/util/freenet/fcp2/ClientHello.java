@@ -16,16 +16,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 package pluginbase.de.todesbaum.util.freenet.fcp2;
 
 import java.io.IOException;
 import java.io.Writer;
 
 /**
- * Implementation of the <code>ClientHello</code> command. This command must
- * be sent as the first command on a connection ({@link de.todesbaum.util.freenet.fcp2.Connection#connect()}
- * takes care of that) and must not be sent afterwards.
+ * Implementation of the <code>ClientHello</code> command. This command must be
+ * sent as the first command on a connection
+ * ({@link de.todesbaum.util.freenet.fcp2.Connection#connect()} takes care of
+ * that) and must not be sent afterwards.
  * <p>
  * The node can answer with the following messages: <code>NodeHello</code>.
  *
@@ -34,10 +34,14 @@ import java.io.Writer;
  */
 public class ClientHello extends Command {
 
-	/** The name of the client. */
+	/**
+	 * The name of the client.
+	 */
 	protected String name;
 
-	/** The version of the FCP protocol the client expects. */
+	/**
+	 * The version of the FCP protocol the client expects.
+	 */
 	protected String expectedVersion = "2.0";
 
 	/**
@@ -63,8 +67,7 @@ public class ClientHello extends Command {
 	 * command. At the moment this value is not used by the node but in the
 	 * future this may be used to enforce certain node versions.
 	 *
-	 * @param expectedVersion
-	 *            The expected version
+	 * @param expectedVersion The expected version
 	 */
 	public void setExpectedVersion(String expectedVersion) {
 		this.expectedVersion = expectedVersion;
@@ -82,8 +85,7 @@ public class ClientHello extends Command {
 	/**
 	 * Sets the name of the client that is connecting.
 	 *
-	 * @param name
-	 *            The name of the client
+	 * @param name The name of the client
 	 */
 	public void setName(String name) {
 		this.name = name;
