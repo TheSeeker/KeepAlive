@@ -46,15 +46,15 @@ public class SingleInsert extends SingleJob {
 			block.bInsertSuccessfull = false;
 
 			// modify the control flag of the URI to get always the raw data
-			byte[] aExtra = fetchUri.getExtra();
-			aExtra[2] = 0;
+			byte[] aExtraI = fetchUri.getExtra();
+			aExtraI[2] = 0;
 
 			// get the compression algorithm of the block
-			String cCompressor = null;
-			if (aExtra[4] >= 0) {
-				cCompressor = Compressor.COMPRESSOR_TYPE.getCompressorByMetadataID((short) aExtra[4]).name;
+			String cCompressorI;
+			if (aExtraI[4] >= 0) {
+				cCompressorI = Compressor.COMPRESSOR_TYPE.getCompressorByMetadataID((short) aExtraI[4]).name;
 			} else {
-				cCompressor = "none";
+				cCompressorI = "none";
 			}
 
 			// fetch
@@ -70,26 +70,27 @@ public class SingleInsert extends SingleJob {
 			Segment segment = reinserter.vSegments.get(block.nSegmentId);
 			// insert
 			if (block.bucket != null) {
-				FreenetURI insertUri = null;
+				FreenetURI insertUri;
 
 				try {
 
 					InsertBlock insertBlock = new InsertBlock(block.bucket, null, fetchUri);
 					InsertContext insertContext = plugin.hlsc.getInsertContext(true);
-					if (cCompressor != null && !cCompressor.equals("none")) {
-						insertContext.compressorDescriptor = cCompressor;
+					if (cCompressorI != null && !cCompressorI.equals("none")) {
+						insertContext.compressorDescriptor = cCompressorI;
 					}
-					if (aExtra[1] == 2) // switch to crypto_algorithm  2 (instead of using the new one that is introduced since 1416)
+					if (aExtraI[1] == 2) // switch to crypto_algorithm  2 (instead of using the new one that is introduced since 1416)
 					{
 						insertContext.setCompatibilityMode(InsertContext.CompatibilityMode.COMPAT_1255);
 					}
 					//don't triple-insert blocks.
 					insertContext.extraInsertsSingleBlock = 0;
+					insertContext.earlyEncode = false;
 
-					//re-insert top blocks and single key files at the highest priority, all others at medium prio.
+					//re-insert top blocks and single key files at very high priority, all others at medium prio.
 					short prio = segment.size() == 1 ? (short) 1 : (short) 3;
 
-					insertUri = plugin.hlsc.insert(insertBlock, false, null, false, prio, insertContext, fetchUri.getCryptoKey());
+					insertUri = plugin.hlsc.insert(insertBlock, null, false, prio, insertContext, fetchUri.getCryptoKey());
 
 					// insert finished
 					if (!reinserter.isActive()) {

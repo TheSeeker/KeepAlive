@@ -28,14 +28,11 @@ import freenet.l10n.BaseL10n.LANGUAGE;
 import freenet.pluginmanager.*;
 import freenet.support.api.HTTPRequest;
 import freenet.support.HTMLNode;
-import freenet.support.plugins.helpers1.PluginContext;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.TreeMap;
-import java.util.Vector;
-import pluginbase.FcpCommandBase;
-import pluginbase.FcpCommands;
+import java.util.ArrayList;
 
 abstract public class PageBase extends Toadlet implements FredPluginL10n {
 
@@ -43,8 +40,8 @@ abstract public class PageBase extends Toadlet implements FredPluginL10n {
 
 	public PluginBase plugin;
 	PageNode page;
-	Vector<HTMLNode> vBoxes = new Vector();
-	TreeMap<String, Message> mMessages = new TreeMap<String, Message>();
+	ArrayList<HTMLNode> vBoxes = new ArrayList();
+	TreeMap<String, Message> mMessages = new TreeMap<>();
 	String cPageName;
 	String cPageTitle;
 	String cMenuTitle = null;
@@ -53,7 +50,7 @@ abstract public class PageBase extends Toadlet implements FredPluginL10n {
 	int nRefreshPeriod = -1;
 	URI uri;
 	HTTPRequest httpRequest;
-	TreeMap<String, String> mRedirectURIs = new TreeMap<String, String>();
+	TreeMap<String, String> mRedirectURIs = new TreeMap<>();
 	private String cRedirectURI;
 	private boolean bFullAccessHostsOnly;
 
@@ -74,7 +71,7 @@ abstract public class PageBase extends Toadlet implements FredPluginL10n {
 			fcp = new FcpCommands(plugin.fcpConnection, this);
 
 		} catch (Exception e) {
-			log("PageBase(): " + e.getMessage(), 1);
+			plugin.log("PageBase(): " + e.getMessage(), 1);
 		}
 	}
 
@@ -82,18 +79,31 @@ abstract public class PageBase extends Toadlet implements FredPluginL10n {
 		return cPageName;
 	}
 
+	@Override
 	public String path() {
 		return plugin.getPath() + "/" + cPageName;
 	}
 
+	/**
+	 *
+	 * @param cKey
+	 * @return
+	 */
+	@Override
 	public String getString(String cKey) {       // FredPluginL10n
 		return plugin.getString(cKey);
 	}
 
+	/**
+	 *
+	 * @param newLanguage
+	 */
+	@Override
 	public void setLanguage(LANGUAGE newLanguage) {      // FredPluginL10n
 		plugin.setLanguage(newLanguage);
 	}
 
+	@Override
 	public void handleMethodGET(URI uri, HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
 		try {
 
@@ -183,12 +193,12 @@ abstract public class PageBase extends Toadlet implements FredPluginL10n {
 			// write
 			writeHTMLReply(ctx, 200, "OK", page.outer.generate());
 
-		} catch (Exception e) {
+		} catch (ToadletContextClosedException | IOException e) {
 			throw new Exception("PageBase.html(): " + e.getMessage());
 		}
 	}
 
-    // ********************************************
+	// ********************************************
 	// methods to use in the derived plugin class:
 	// ********************************************
 	// file log
@@ -231,16 +241,17 @@ abstract public class PageBase extends Toadlet implements FredPluginL10n {
 		try {
 
 			byte[] aContent = new byte[1024];
-			InputStream stream = getClass().getResourceAsStream("/" + getClass().getPackage().getName().replace('.', '/') + "/html/" + cName);
-			int nLen;
-			String cContent = "";
-			while ((nLen = stream.read(aContent)) != -1) {
-				cContent += new String(aContent, 0, nLen, "UTF-8");
+			String cContent;
+			try (InputStream stream = getClass().getResourceAsStream("/" + getClass().getPackage().getName().replace('.', '/') + "/html/" + cName)) {
+				int nLen;
+				cContent = "";
+				while ((nLen = stream.read(aContent)) != -1) {
+					cContent += new String(aContent, 0, nLen, "UTF-8");
+				}
 			}
-			stream.close();
 			return cContent;
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new Exception("PageBase.html(): " + e.getMessage());
 		}
 	}
@@ -285,7 +296,7 @@ abstract public class PageBase extends Toadlet implements FredPluginL10n {
 				return null;
 			}
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new Exception("PageBase.getParam(): " + e.getMessage());
 		}
 	}

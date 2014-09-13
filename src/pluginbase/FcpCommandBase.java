@@ -21,17 +21,16 @@ package pluginbase;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.util.Vector;
+import java.util.ArrayList;
 import pluginbase.de.todesbaum.util.freenet.fcp2.Command;
 import pluginbase.de.todesbaum.util.freenet.fcp2.Connection;
-import freenet.support.SimpleFieldSet;
 
 abstract public class FcpCommandBase extends Command {
 
 	protected PageBase page;
-	private Connection fcpConnection;
+	private final Connection fcpConnection;
 	private String cCommandName;
-	private Vector<String> vFields = new Vector();
+	private final ArrayList<String> vFields = new ArrayList<>();
 	private InputStream dataStream;
 	private int nDataLength;
 
@@ -46,6 +45,7 @@ abstract public class FcpCommandBase extends Command {
 		this.fcpConnection = fcpConnection;
 	}
 
+	@Override
 	public String getCommandName() {
 		return cCommandName;
 	}
@@ -64,18 +64,22 @@ abstract public class FcpCommandBase extends Command {
 		}
 	}
 
+	@Override
 	protected boolean hasPayload() {
 		return (dataStream != null);
 	}
 
+	@Override
 	protected InputStream getPayload() {
 		return dataStream;
 	}
 
+	@Override
 	protected long getPayloadLength() {
 		return nDataLength;
 	}
 
+	@Override
 	protected void write(Writer writer) throws IOException {
 		try {
 
@@ -84,9 +88,8 @@ abstract public class FcpCommandBase extends Command {
 			}
 
 		} catch (IOException e) {
-			throw new IOException("FcpCommandBase.write(): " + e.getMessage());
-		} catch (Exception e) {
 			page.log("FcpCommandBase.write(): " + e.getMessage(), 1);
+			throw new IOException("FcpCommandBase.write(): " + e.getMessage());
 		}
 	}
 
@@ -132,7 +135,7 @@ abstract public class FcpCommandBase extends Command {
 			this.nDataLength = nDataLength;
 			fcpConnection.execute(this);
 
-		} catch (Exception e) {
+		} catch (IllegalStateException | IOException e) {
 			throw new Exception("FcpCommandBase.send(): " + e.getMessage());
 		}
 	}

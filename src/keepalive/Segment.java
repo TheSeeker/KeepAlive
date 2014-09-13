@@ -20,9 +20,9 @@ package keepalive;
 
 public class Segment {
 
-	private Reinserter reinserter;
+	private final Reinserter reinserter;
 	protected int nId;
-	private int nSize;
+	private final int nSize;
 	private int nDataBlocksCount;
 	private Block[] aBlocks;
 	private int nSuccess = 0;
@@ -90,7 +90,9 @@ public class Segment {
 	}
 
 	public boolean isFinished() {
-
+		if (aBlocks == null) {
+			return true;
+		}
 		boolean bFinished = true;
 		if (!bPersistenceCheckOk && !bHealingNotPossible) {
 			if (nSize == 1) {

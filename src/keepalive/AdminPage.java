@@ -20,30 +20,32 @@ package keepalive;
 
 import freenet.keys.FreenetURI;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import pluginbase.PageBase;
 
 public class AdminPage extends PageBase {
 
-	Plugin plugin;
+	Plugin kaPlugin;
 
 	public AdminPage(Plugin plugin) {
 		super("", "Keep Alive", plugin, true);
-		this.plugin = plugin;
+		this.kaPlugin = plugin;
 		addPageToMenu("Start reinsertion of sites", "Add or remove sites you like to reinsert");
 	}
 
+	@Override
 	protected void handleRequest() {
 		try {
 
 			// start reinserter
 			if (getParam("start") != null) {
-				plugin.startReinserter(getIntParam("start"));
+				kaPlugin.startReinserter(getIntParam("start"));
 			}
 
 			// stop reinserter
 			if (getParam("stop") != null) {
-				plugin.stopReinserter();
+				kaPlugin.stopReinserter();
 			}
 
 			// modify power
@@ -72,7 +74,7 @@ public class AdminPage extends PageBase {
 
 			// clear logs
 			if (getParam("clear_logs") != null) {
-				plugin.clearAllLogs();
+				kaPlugin.clearAllLogs();
 			}
 
 			// clear history
@@ -80,41 +82,45 @@ public class AdminPage extends PageBase {
 				removeProp("history_" + getParam("clear_history"));
 			}
 
-			// add uri
-			if (getParam("uri") != null) {
-
-				// validate
-				String cUriOrig = URLDecoder.decode(getParam("uri"));
-				String cUri = cUriOrig;
-				int nBegin = cUri.indexOf("@") - 3;
-				if (nBegin > 0) {
-					cUri = cUri.substring(nBegin);
-				}
-				boolean bValid = true;
-				try {
-					FreenetURI uri = new FreenetURI(cUri);
-					cUri = uri.toString();
-				} catch (Exception e) {
-					bValid = false;
-					addBox("URI not valid!", "You have typed:<br><br>" + cUriOrig);
-				}
-
-				// add
-				if (bValid) {
-					int[] aIds = plugin.getIds();
-					int nId;
-					if (aIds.length == 0) {
-						nId = 0;
-					} else {
-						nId = aIds[aIds.length - 1] + 1;
+			// add uris
+			if (getParam("uris") != null) {
+				String[] splitURIs = getParam("uris").split("\n");
+				for (String splitURI : splitURIs) {
+					// validate
+					String cUriOrig = URLDecoder.decode(splitURI, "UTF8").trim();
+					if (cUriOrig.equals("")) {
+						continue;  //ignore blank lines.
 					}
-					setProp("ids", getProp("ids") + nId + ",");
-					setProp("uri_" + nId, cUri);
-					setProp("blocks_" + nId, "?");
-					setProp("success_" + nId, "");
-					setIntProp("segment_" + nId, -1);
-				}
+					String cUri = cUriOrig;
+					int nBegin = cUri.indexOf("@") - 3;
+					if (nBegin > 0) {
+						cUri = cUri.substring(nBegin);
+					}
+					boolean bValid = true;
+					try {
+						FreenetURI uri = new FreenetURI(cUri);
+						cUri = uri.toString();
+					} catch (MalformedURLException e) {
+						bValid = false;
+						addBox("URI not valid!", "You have typed:<br><br>" + cUriOrig);
+					}
 
+					// add if not already on the list.
+					if (bValid && !isDuplicate(cUri)) {
+						int[] aIds = kaPlugin.getIds();
+						int nId;
+						if (aIds.length == 0) {
+							nId = 0;
+						} else {
+							nId = aIds[aIds.length - 1] + 1;
+						}
+						setProp("ids", getProp("ids") + nId + ",");
+						setProp("uri_" + nId, cUri);
+						setProp("blocks_" + nId, "?");
+						setProp("success_" + nId, "");
+						setIntProp("segment_" + nId, -1);
+					}
+				}
 			}
 
 			// remove uri
@@ -122,16 +128,16 @@ public class AdminPage extends PageBase {
 
 				// stop reinserter
 				int nId = getIntParam("remove");
-				if (nId == plugin.getIntProp("active")) {
-					plugin.stopReinserter();
+				if (nId == kaPlugin.getIntProp("active")) {
+					kaPlugin.stopReinserter();
 				}
 
 				// remove log and key files
-				File file = new File(plugin.getPluginDirectory() + plugin.getLogFilename(nId));
+				File file = new File(kaPlugin.getPluginDirectory() + kaPlugin.getLogFilename(nId));
 				if (file.exists()) {
 					file.delete();
 				}
-				file = new File(plugin.getPluginDirectory() + plugin.getBlockListFilename(nId));
+				file = new File(kaPlugin.getPluginDirectory() + kaPlugin.getBlockListFilename(nId));
 				if (file.exists()) {
 					file.delete();
 				}
@@ -150,7 +156,7 @@ public class AdminPage extends PageBase {
 			}
 
 			// unsupported keys box
-			int[] aIds = plugin.getIds();
+			int[] aIds = kaPlugin.getIds();
 			String cZeroBlockSites = "";
 			for (int i = 0; i < aIds.length; i++) {
 				if (getProp("blocks_" + aIds[i]).equals("0")) {
@@ -168,14 +174,15 @@ public class AdminPage extends PageBase {
 			String cHtml = html("add_key") + "<br><table><tr style=\"text-align:center;\"><td style='border:0'></td><td>total<br>blocks</td><td>available<br>blocks</td><td>missed<br>blocks</td><td>blocks<br>availability</td><td>segments<br>availability</td><td style='border:0'></td><td style='border:0'></td></tr>";
 			for (int i = 0; i < aIds.length; i++) {
 				int nId = aIds[i];
-				String cUri = getProp("uri_" + nId);
-				int nSuccess = plugin.getSuccessValues(nId)[0];
-				int nFailure = plugin.getSuccessValues(nId)[1];
+				String cUri;
+				cUri = getProp("uri_" + nId);
+				int nSuccess = kaPlugin.getSuccessValues(nId)[0];
+				int nFailure = kaPlugin.getSuccessValues(nId)[1];
 				int nPersistence = 0;
 				if (nSuccess > 0) {
 					nPersistence = (int) ((double) nSuccess / (nSuccess + nFailure) * 100);
 				}
-				int nAvailableSegments = plugin.getSuccessValues(nId)[2];
+				int nAvailableSegments = kaPlugin.getSuccessValues(nId)[2];
 				int nSegmentsAvailability = 0;
 				int nFinishedSegmentsCount = getIntProp("segment_" + nId) + 1;
 				if (nFinishedSegmentsCount > 0) {
@@ -206,9 +213,9 @@ public class AdminPage extends PageBase {
 			if (getParam("master_log") != null || getParam("log") != null) {
 				String cLog;
 				if (getParam("master_log") != null) {
-					cLog = plugin.getLog();
+					cLog = kaPlugin.getLog();
 				} else {
-					cLog = plugin.getLog(plugin.getLogFilename(getIntParam("log")));
+					cLog = kaPlugin.getLog(kaPlugin.getLogFilename(getIntParam("log")));
 				}
 				if (cLog == null) {
 					cLog = "";
@@ -243,7 +250,7 @@ public class AdminPage extends PageBase {
 
 			// info box
 			cHtml = html("info");
-			cHtml = cHtml.replaceAll("#1", plugin.getVersion());
+			cHtml = cHtml.replaceAll("#1", kaPlugin.getVersion());
 			addBox("Information", cHtml);
 
 		} catch (Exception e) {
@@ -254,7 +261,7 @@ public class AdminPage extends PageBase {
 	protected synchronized void updateUskEdition(int nSiteId) {
 		try {
 
-			String cSiteUri = plugin.getProp("uri_" + nSiteId);
+			String cSiteUri = kaPlugin.getProp("uri_" + nSiteId);
 			String cId = "updateUskEdition" + System.currentTimeMillis();
 			fcp.sendClientGet(cId, cSiteUri);
 			int nSecs = 0;
@@ -263,7 +270,7 @@ public class AdminPage extends PageBase {
 				nSecs++;
 			}
 			if (getRedirectURI() != null) {
-				plugin.setProp("uri_" + nSiteId, getRedirectURI());
+				kaPlugin.setProp("uri_" + nSiteId, getRedirectURI());
 				log("RedirectURI: " + getRedirectURI(), 1);
 			}
 
@@ -305,5 +312,22 @@ public class AdminPage extends PageBase {
 		} catch (Exception e) {
 			log("AdminPage.setPropByParam(): " + e.getMessage(), 0);
 		}
+	}
+
+	public synchronized boolean isDuplicate(String cUri) {
+
+		try {
+			String iId;
+			for (int i : kaPlugin.getIds()) {
+				iId = getProp("uri_" + i);
+				if (iId.equals(cUri)) {
+					addBox("Duplicate URI", "We are already keeping this key alive:<br><br>" + cUri);
+					return true;
+				}
+			}
+		} catch (Exception ex) {
+			log("AdminPage.isDuplicate(): " + ex.getMessage(), 0);
+		}
+		return false;
 	}
 }

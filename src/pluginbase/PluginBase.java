@@ -34,6 +34,7 @@ import freenet.support.plugins.helpers1.WebInterface;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -70,7 +71,7 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 
 			// prepare and clear log file
 			(new File(cPath)).mkdir();
-			mLogFiles = new TreeMap<String, RandomAccessFile>();
+			mLogFiles = new TreeMap<>();
 			initLog("log.txt");
 			dateFormat = new SimpleDateFormat("yyyy.MM.dd_HH.mm_ss");
 			dateFormat.setTimeZone(TimeZone.getDefault());
@@ -102,6 +103,7 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 		return cPath + "/";
 	}
 
+	@Override
 	public void runPlugin(PluginRespirator pr) {          // FredPlugin
 		try {
 
@@ -126,18 +128,31 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 		}
 	}
 
+	@Override
 	public String getVersion() {                         // FredPluginVersioned
 		return cTitle + " " + cVersion;
 	}
 
+	/**
+	 *
+	 * @param cKey
+	 * @return
+	 */
+	@Override
 	public String getString(String cKey) {               // FredPluginL10n
 		return cKey;
 	}
 
+	/**
+	 *
+	 * @param language
+	 */
+	@Override
 	public void setLanguage(LANGUAGE language) {         // FredPluginL10n
 		nodeLanguage = language;
 	}
 
+	@Override
 	public void terminate() {                            // FredPlugin
 		try {
 
@@ -153,11 +168,12 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 				file.close();
 			}
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			log("PluginBase.terminate(): " + e.getMessage(), 1);
 		}
 	}
 
+	@Override
 	public void messageReceived(Connection connection, Message message) {            // ConnectionListener
 		try {
 
@@ -199,6 +215,7 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 		}
 	}
 
+	@Override
 	public void connectionTerminated(Connection connection) {                        // ConnectionListener
 		log("fcp connection terminated");
 	}
@@ -212,7 +229,7 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 				fcpConnection.connect();
 			}
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			log("PluginBase.connectFcp(): " + e.getMessage(), 1);
 		}
 	}
@@ -257,7 +274,7 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 				mLogFiles.put(cFilename, file);
 			}
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			log("PluginBase.initLog(): " + e.getMessage());
 		}
 	}
@@ -288,14 +305,15 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 			initLog(cFilename);
 			RandomAccessFile file = mLogFiles.get(cFilename);
 			file.seek(0);
-			StringBuffer buffer = new StringBuffer();
+			StringBuilder buffer;
+			buffer = new StringBuilder();
 			String cLine;
 			while ((cLine = file.readLine()) != null) {
-				buffer.append(cLine + "\n");
+				buffer.append(cLine).append("\n");
 			}
 			return buffer.toString();
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			log("PluginBase.getLog(): " + e.getMessage());
 			return null;
 		}
@@ -307,7 +325,7 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 			initLog(cFilename);
 			mLogFiles.get(cFilename).setLength(0);
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			log("PluginBase.clearLog(): " + e.getMessage());
 		}
 	}
@@ -319,7 +337,7 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 				file.setLength(0);
 			}
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			log("PluginBase.clearAllLogs(): " + e.getMessage());
 		}
 	}
@@ -398,9 +416,9 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 					newFile.delete();
 				}
 
-				FileOutputStream stream = new FileOutputStream(newFile);
-				prop.store(stream, cTitle);
-				stream.close();
+				try (FileOutputStream stream = new FileOutputStream(newFile)) {
+					prop.store(stream, cTitle);
+				}
 
 				if (oldFile.exists()) {
 					oldFile.delete();
@@ -413,7 +431,7 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 				newFile.renameTo(file);
 			}
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			log("PluginBase.saveProp(): " + e.getMessage());
 		}
 	}

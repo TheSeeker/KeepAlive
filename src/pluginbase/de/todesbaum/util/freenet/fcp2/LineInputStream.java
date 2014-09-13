@@ -31,7 +31,7 @@ import java.io.InputStream;
 public class LineInputStream extends FilterInputStream {
 
 	private boolean skipLinefeed = false;
-	private StringBuffer lineBuffer = new StringBuffer();
+	private final StringBuffer lineBuffer = new StringBuffer();
 
 	/**
 	 * @param in
@@ -61,7 +61,7 @@ public class LineInputStream extends FilterInputStream {
 				}
 			}
 			return lineBuffer.toString();
-		} catch (Exception e) {
+		} catch (IOException e) {
 			return null;
 		}
 	}

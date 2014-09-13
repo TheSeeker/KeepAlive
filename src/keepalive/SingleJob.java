@@ -88,9 +88,9 @@ public class SingleJob extends Thread {
 
 	private class ActivityGuard extends Thread {
 
-		private SingleJob singleJob;
-		private long nStartTime;
-		private String cType;
+		private final SingleJob singleJob;
+		private final long nStartTime;
+		private final String cType;
 
 		public ActivityGuard(SingleJob singleJob, String cType) {
 			this.singleJob = singleJob;
@@ -119,8 +119,8 @@ public class SingleJob extends Thread {
 					long nStopCheckBegin = System.currentTimeMillis();
 					while (singleJob.isAlive() && nStopCheckBegin > System.currentTimeMillis() - 60 * 1000) {
 						try {
-							wait(100);
-						} catch (Exception e) {
+							wait(1000);
+						} catch (InterruptedException e) {
 						}
 					}
 					if (!singleJob.isAlive()) {
@@ -130,7 +130,7 @@ public class SingleJob extends Thread {
 					}
 				}
 
-			} catch (Exception e) {
+			} catch (InterruptedException e) {
 				plugin.log("singleJob.ActivityGuard.run(): " + e.getMessage(), 0);
 			}
 		}

@@ -93,6 +93,8 @@ public class ClientHello extends Command {
 
 	/**
 	 * {@inheritDoc}
+	 *
+	 * @throws java.io.IOException
 	 */
 	@Override
 	protected void write(Writer writer) throws IOException {

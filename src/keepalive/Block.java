@@ -19,7 +19,7 @@
 package keepalive;
 
 import freenet.keys.FreenetURI;
-import freenet.support.api.Bucket;
+import freenet.support.io.ArrayBucket;
 
 public class Block {
 
@@ -27,7 +27,7 @@ public class Block {
 	int nSegmentId;
 	int nId;
 	boolean bIsDataBlock;
-	Bucket bucket;
+	ArrayBucket bucket;
 	boolean bFetchDone; // done but not necessarily successful
 	boolean bInsertDone; // done but not necessarily successful
 	boolean bFetchSuccessfull;

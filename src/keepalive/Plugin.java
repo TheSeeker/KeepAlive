@@ -31,11 +31,12 @@ public class Plugin extends PluginBase {
 
 	public Plugin() {
 		super("KeepAlive", "Keep Alive", "prop.txt");
-		setVersion("0.3.2.3-TS");
+		setVersion("0.3.3-TS");
 		addPluginToMenu("Keep Alive", "Reinsert sites and files in the background");
 		clearLog();
 	}
 
+	@Override
 	public void runPlugin(PluginRespirator pr) {
 		super.runPlugin(pr);
 		try {
@@ -51,7 +52,7 @@ public class Plugin extends PluginBase {
 				for (int i = 0; i < aIds.length; i++) {
 					setProp("blocks_" + aIds[i], "?");
 				}
-				setProp("version", "0.3.2.3-TS");
+				setProp("version", "0.3.3-TS");
 			}
 
 			// initial values
@@ -62,7 +63,7 @@ public class Plugin extends PluginBase {
 				setProp("ids", "");
 			}
 			if (getProp("power") == null) {
-				setIntProp("power", 5);
+				setIntProp("power", 6);
 			}
 			if (getProp("active") == null) {
 				setIntProp("active", -1);
@@ -71,7 +72,7 @@ public class Plugin extends PluginBase {
 				setIntProp("splitfile_tolerance", 66);
 			}
 			if (getProp("splitfile_test_size") == null) {
-				setIntProp("splitfile_test_size", 12);
+				setIntProp("splitfile_test_size", 18);
 			}
 			if (getProp("log_links") == null) {
 				setIntProp("log_links", 1);
@@ -182,6 +183,7 @@ public class Plugin extends PluginBase {
 		return "keys" + nSiteId + ".txt";
 	}
 
+	@Override
 	public void saveProp() {
 		if (nPropSavingTimestamp < System.currentTimeMillis() - 10 * 1000) {
 			super.saveProp();
@@ -189,6 +191,7 @@ public class Plugin extends PluginBase {
 		}
 	}
 
+	@Override
 	public void terminate() {
 		super.terminate();
 		if (reinserter != null) {

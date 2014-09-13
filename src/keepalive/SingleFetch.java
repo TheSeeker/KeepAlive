@@ -24,6 +24,8 @@ import freenet.client.FetchResult;
 import freenet.client.HighLevelSimpleClientImpl;
 import freenet.keys.FreenetURI;
 import freenet.support.compress.Compressor;
+import freenet.support.io.ArrayBucket;
+import java.io.IOException;
 
 public class SingleFetch extends SingleJob {
 
@@ -36,10 +38,6 @@ public class SingleFetch extends SingleJob {
 	}
 
 	@Override
-	public String toString() {
-		return "KeepAlive - SingleFetch";
-	}
-
 	public void run() {
 		super.run();
 		try {
@@ -53,22 +51,22 @@ public class SingleFetch extends SingleJob {
 			block.bFetchSuccessfull = false;
 
 			// modify the control flag of the URI to get always the raw data
-			byte[] aExtra = fetchUri.getExtra();
-			aExtra[2] = 0;
+			byte[] aExtraF = fetchUri.getExtra();
+			aExtraF[2] = 0;
 
 			// get the compression algorithm of the block
-			String cCompressor = null;
-			if (aExtra[4] >= 0) {
-				cCompressor = Compressor.COMPRESSOR_TYPE.getCompressorByMetadataID((short) aExtra[4]).name;
+			String cCompressorF;
+			if (aExtraF[4] >= 0) {
+				cCompressorF = Compressor.COMPRESSOR_TYPE.getCompressorByMetadataID((short) aExtraF[4]).name;
 			} else {
-				cCompressor = "none";
+				cCompressorF = "none";
 			}
 
 			// request
 			FetchResult fetchResult = null;
 			try {
 
-				log("request: " + block.uri.toString() + " (crypt=" + aExtra[1] + ",control=" + block.uri.getExtra()[2] + ",compress=" + aExtra[4] + "=" + cCompressor + ")", 2);
+				log("request: " + block.uri.toString() + " (crypt=" + aExtraF[1] + ",control=" + block.uri.getExtra()[2] + ",compress=" + aExtraF[4] + "=" + cCompressorF + ")", 2);
 				if (!bPersistenceCheck) {
 					fetchResult = plugin.hlsc.fetch(fetchUri);
 				} else {
@@ -84,7 +82,7 @@ public class SingleFetch extends SingleJob {
 				if (fetchResult == null) {
 					block.setResultLog("-> fetch failed");
 				} else {
-					block.bucket = fetchResult.asBucket();
+					block.bucket = new ArrayBucket(fetchResult.asByteArray());
 					block.bFetchSuccessfull = true;
 					block.setResultLog("-> fetch successful");
 				}
@@ -95,7 +93,7 @@ public class SingleFetch extends SingleJob {
 			block.bFetchDone = true;
 			finish();
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			plugin.log("SingleFetch.run(): " + e.getMessage(), 0);
 		}
 	}
@@ -106,6 +104,7 @@ public class SingleFetch extends SingleJob {
 			super(hlsc);
 		}
 
+		@Override
 		public FetchContext getFetchContext() {
 			FetchContext fc = super.getFetchContext();
 			fc.ignoreStore = true;

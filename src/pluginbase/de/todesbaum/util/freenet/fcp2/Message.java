@@ -49,7 +49,7 @@ public class Message {
 	/**
 	 * The parameters of this message.
 	 */
-	private Map<String, String> parameters = new HashMap<String, String>();
+	private final Map<String, String> parameters = new HashMap<>();
 
 	/**
 	 * The payload.

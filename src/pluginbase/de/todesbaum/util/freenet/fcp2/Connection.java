@@ -30,11 +30,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import pluginbase.de.todesbaum.util.freenet.fcp2.Closer;
-import pluginbase.de.todesbaum.util.freenet.fcp2.LineInputStream;
-import pluginbase.de.todesbaum.util.freenet.fcp2.StreamCopier;
-import pluginbase.de.todesbaum.util.freenet.fcp2.TempFileInputStream;
-
 /**
  * A physical connection to a Freenet node.
  *
@@ -46,7 +41,7 @@ public class Connection {
 	/**
 	 * The listeners that receive events from this connection.
 	 */
-	private List<ConnectionListener> connectionListeners = new ArrayList<ConnectionListener>();
+	private final List<ConnectionListener> connectionListeners = new ArrayList<>();
 
 	/**
 	 * The node this connection is connected to.
@@ -193,7 +188,7 @@ public class Connection {
 			execute(clientHello);
 			synchronized (this) {
 				try {
-					wait();
+					wait(10000);
 				} catch (InterruptedException e) {
 				}
 			}
@@ -302,7 +297,7 @@ public class Connection {
 		 * The input stream to read from.
 		 */
 		@SuppressWarnings("hiding")
-		private InputStream nodeInputStream;
+		private final InputStream nodeInputStream;
 
 		/**
 		 * Creates a new reader that reads from the specified input stream.
@@ -317,13 +312,14 @@ public class Connection {
 		 * Main loop of the reader. Lines are read and converted into
 		 * {@link Message} objects.
 		 */
+		@Override
 		public void run() {
 			LineInputStream nodeReader = null;
 			try {
 				nodeReader = new LineInputStream(nodeInputStream);
-				String line = "";
+				String line;
 				Message message = null;
-				while (line != null) {
+				while (true) {
 					line = nodeReader.readLine();
 					// System.err.println("> " + line);
 					if (line == null) {
@@ -335,14 +331,14 @@ public class Connection {
 					}
 					if ("Data".equals(line)) {
 						/* need to read message from stream now */
-						File tempFile = null;
+						File tempFile;
 						try {
 							tempFile = File.createTempFile("fcpv2", "data", (tempDirectory != null) ? new File(tempDirectory) : null);
 							tempFile.deleteOnExit();
-							FileOutputStream tempFileOutputStream = new FileOutputStream(tempFile);
-							long dataLength = Long.parseLong(message.get("DataLength"));
-							StreamCopier.copy(nodeInputStream, tempFileOutputStream, dataLength);
-							tempFileOutputStream.close();
+							try (FileOutputStream tempFileOutputStream = new FileOutputStream(tempFile)) {
+								long dataLength = Long.parseLong(message.get("DataLength"));
+								StreamCopier.copy(nodeInputStream, tempFileOutputStream, dataLength);
+							}
 							message.setPayloadInputStream(new TempFileInputStream(tempFile));
 						} catch (IOException ioe1) {
 							ioe1.printStackTrace();
