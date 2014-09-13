@@ -183,7 +183,7 @@ abstract public class PageBase extends Toadlet implements FredPluginL10n {
 		}
 	}
 
-    // ********************************************
+	// ********************************************
 	// methods to use in the derived plugin class:
 	// ********************************************
 	// file log
