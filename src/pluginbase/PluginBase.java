@@ -22,25 +22,19 @@ import pluginbase.de.todesbaum.util.freenet.fcp2.Connection;
 import pluginbase.de.todesbaum.util.freenet.fcp2.ConnectionListener;
 import pluginbase.de.todesbaum.util.freenet.fcp2.Message;
 import pluginbase.de.todesbaum.util.freenet.fcp2.Node;
-import freenet.pluginmanager.PluginReplySender;
-import freenet.pluginmanager.PluginRespirator;
 import freenet.clients.http.PageMaker;
 import freenet.l10n.BaseL10n.LANGUAGE;
-import freenet.node.fcp.FCPClient;
-import freenet.node.fcp.FCPConnectionHandler;
 import freenet.pluginmanager.FredPlugin;
 import freenet.pluginmanager.FredPluginL10n;
 import freenet.pluginmanager.FredPluginThreadless;
 import freenet.pluginmanager.FredPluginVersioned;
-import freenet.support.SimpleFieldSet;
-import freenet.support.api.Bucket;
+import freenet.pluginmanager.PluginRespirator;
 import freenet.support.plugins.helpers1.PluginContext;
 import freenet.support.plugins.helpers1.WebInterface;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
-import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -229,9 +223,20 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 			if (cPropFilename != null) {
 				prop = new Properties();
 				File file = new File(cPath + "/" + cPropFilename);
-				if (file.exists()) {
-					prop.load(new FileInputStream(file));
+				File oldFile = new File(cPath + "/" + cPropFilename + ".old");
+
+				FileInputStream is;
+				//always load from the backup if it exists, it is (almost?)
+				//guaranteed to be good.
+				if (oldFile.exists()) {
+					is = new FileInputStream(oldFile);
+				} else if (file.exists()) {
+					is = new FileInputStream(file);
+				} else {
+					throw new Exception("No Prop file found.");
 				}
+				prop.load(is);
+				is.close();
 			}
 
 		} catch (Exception e) {
@@ -386,12 +391,26 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 
 			if (prop != null) {
 				File file = new File(cPath + "/" + cPropFilename);
-				if (file.exists()) {
-					file.delete();
+				File oldFile = new File(cPath + "/" + cPropFilename + ".old");
+				File newFile = new File(cPath + "/" + cPropFilename + ".new");
+
+				if (newFile.exists()) {
+					newFile.delete();
 				}
-				FileOutputStream stream = new FileOutputStream(file);
+
+				FileOutputStream stream = new FileOutputStream(newFile);
 				prop.store(stream, cTitle);
 				stream.close();
+
+				if (oldFile.exists()) {
+					oldFile.delete();
+				}
+
+				if (file.exists()) {
+					file.renameTo(oldFile);
+				}
+
+				newFile.renameTo(file);
 			}
 
 		} catch (Exception e) {

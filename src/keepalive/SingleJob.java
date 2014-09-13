@@ -18,16 +18,6 @@
  */
 package keepalive;
 
-import freenet.client.FetchContext;
-import freenet.client.FetchException;
-import freenet.client.FetchResult;
-import freenet.client.HighLevelSimpleClientImpl;
-import freenet.client.InsertBlock;
-import freenet.client.InsertContext;
-import freenet.client.InsertException;
-import freenet.keys.FreenetURI;
-import freenet.support.compress.Compressor;
-
 public class SingleJob extends Thread {
 
 	static final int MAX_LIFETIME = 30;
@@ -50,6 +40,7 @@ public class SingleJob extends Thread {
 		reinserter.nActiveSingleJobCount++;
 	}
 
+	@Override
 	public void run() {
 		try {
 
@@ -107,6 +98,7 @@ public class SingleJob extends Thread {
 			nStartTime = System.currentTimeMillis();
 		}
 
+		@Override
 		public synchronized void run() {
 			try {
 

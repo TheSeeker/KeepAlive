@@ -22,9 +22,6 @@ import freenet.client.FetchContext;
 import freenet.client.FetchException;
 import freenet.client.FetchResult;
 import freenet.client.HighLevelSimpleClientImpl;
-import freenet.client.InsertBlock;
-import freenet.client.InsertContext;
-import freenet.client.InsertException;
 import freenet.keys.FreenetURI;
 import freenet.support.compress.Compressor;
 
@@ -38,13 +35,18 @@ public class SingleFetch extends SingleJob {
 		this.bPersistenceCheck = bPersistenceCheck;
 	}
 
+	@Override
+	public String toString() {
+		return "KeepAlive - SingleFetch";
+	}
+
 	public void run() {
 		super.run();
 		try {
 
 			// init
-			HighLevelSimpleClientImpl hlsc = (HighLevelSimpleClientImpl) plugin.pluginContext.hlsc;
-			HLSCignoreStore hlscIgnoreStore = new HLSCignoreStore(hlsc);
+			//HighLevelSimpleClientImpl hlsc = (HighLevelSimpleClientImpl) plugin.pluginContext.node.clientCore.makeClient((short) 3, false, false);
+			HLSCignoreStore hlscIgnoreStore = new HLSCignoreStore(plugin.hlsc);
 
 			FreenetURI fetchUri = block.uri.clone();
 			block.bFetchDone = false;
@@ -68,7 +70,7 @@ public class SingleFetch extends SingleJob {
 
 				log("request: " + block.uri.toString() + " (crypt=" + aExtra[1] + ",control=" + block.uri.getExtra()[2] + ",compress=" + aExtra[4] + "=" + cCompressor + ")", 2);
 				if (!bPersistenceCheck) {
-					fetchResult = hlsc.fetch(fetchUri);
+					fetchResult = plugin.hlsc.fetch(fetchUri);
 				} else {
 					fetchResult = hlscIgnoreStore.fetch(fetchUri);
 				}

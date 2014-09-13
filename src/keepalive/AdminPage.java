@@ -19,13 +19,9 @@
 package keepalive;
 
 import freenet.keys.FreenetURI;
-import freenet.support.api.HTTPRequest;
 import java.io.File;
 import java.net.URLDecoder;
-import pluginbase.PluginBase;
 import pluginbase.PageBase;
-
-import java.util.Vector;
 
 public class AdminPage extends PageBase {
 

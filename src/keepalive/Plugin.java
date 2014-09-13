@@ -18,11 +18,8 @@
  */
 package keepalive;
 
-import freenet.keys.FreenetURI;
+import freenet.client.HighLevelSimpleClientImpl;
 import freenet.pluginmanager.PluginRespirator;
-import java.io.File;
-import java.net.URLDecoder;
-import java.util.Vector;
 import pluginbase.PluginBase;
 
 public class Plugin extends PluginBase {
@@ -30,10 +27,11 @@ public class Plugin extends PluginBase {
 	AdminPage adminPage;
 	Reinserter reinserter;
 	long nPropSavingTimestamp;
+	HighLevelSimpleClientImpl hlsc;
 
 	public Plugin() {
 		super("KeepAlive", "Keep Alive", "prop.txt");
-		setVersion("0.3.2");
+		setVersion("0.3.2.1-TS");
 		addPluginToMenu("Keep Alive", "Reinsert sites and files in the background");
 		clearLog();
 	}
@@ -41,7 +39,7 @@ public class Plugin extends PluginBase {
 	public void runPlugin(PluginRespirator pr) {
 		super.runPlugin(pr);
 		try {
-
+			hlsc = (HighLevelSimpleClientImpl) pluginContext.node.clientCore.makeClient((short) 5, false, true);
 			// migrate from 0.2 to 0.3
 			if (getProp("version") == null || !getProp("version").substring(0, 3).equals("0.3")) {
 				// remove boost params
@@ -53,11 +51,13 @@ public class Plugin extends PluginBase {
 				for (int i = 0; i < aIds.length; i++) {
 					setProp("blocks_" + aIds[i], "?");
 				}
-				setProp("version", "0.3");
+				setProp("version", "0.3.2.1-TS");
 			}
 
 			// initial values
-			setIntProp("loglevel", 1);
+			if (getProp("loglevel") == null) {
+				setIntProp("loglevel", 1);
+			}
 			if (getProp("ids") == null) {
 				setProp("ids", "");
 			}
@@ -68,10 +68,10 @@ public class Plugin extends PluginBase {
 				setIntProp("active", -1);
 			}
 			if (getProp("splitfile_tolerance") == null) {
-				setIntProp("splitfile_tolerance", 70);
+				setIntProp("splitfile_tolerance", 66);
 			}
 			if (getProp("splitfile_test_size") == null) {
-				setIntProp("splitfile_test_size", 50);
+				setIntProp("splitfile_test_size", 12);
 			}
 			if (getProp("log_links") == null) {
 				setIntProp("log_links", 1);
@@ -79,11 +79,10 @@ public class Plugin extends PluginBase {
 			if (getProp("log_utc") == null) {
 				setIntProp("log_utc", 1);
 			}
-			saveProp();
-
 			if (getIntProp("log_utc") == 1) {
 				setTimezoneUTC();
 			}
+			saveProp();
 
 			// build page and menu
 			adminPage = new AdminPage(this);
@@ -110,7 +109,7 @@ public class Plugin extends PluginBase {
 		}
 	}
 
-	public void stopReinserter() {
+	public synchronized void stopReinserter() {
 		try {
 
 			if (reinserter != null) {

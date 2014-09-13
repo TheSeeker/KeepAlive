@@ -58,7 +58,7 @@ abstract public class PageBase extends Toadlet implements FredPluginL10n {
 	private boolean bFullAccessHostsOnly;
 
 	public PageBase(String cPageName, String cPageTitle, PluginBase plugin, boolean bFullAccessHostsOnly) {
-		super(plugin.pluginContext.hlsc);
+		super(plugin.pluginContext.node.clientCore.makeClient((short) 3, false, false));
 
 		try {
 			this.cPageName = cPageName;

@@ -18,10 +18,6 @@
  */
 package keepalive;
 
-import freenet.client.FetchContext;
-import freenet.client.FetchException;
-import freenet.client.FetchResult;
-import freenet.client.HighLevelSimpleClientImpl;
 import freenet.client.InsertBlock;
 import freenet.client.InsertContext;
 import freenet.client.InsertException;
@@ -34,11 +30,17 @@ public class SingleInsert extends SingleJob {
 		super(reinserter, "insertion", block);
 	}
 
+	@Override
+	public String toString() {
+		return "KeepAlive - SingleInsert";
+	}
+
+	@Override
 	public void run() {
 		super.run();
 		try {
 
-			HighLevelSimpleClientImpl hlsc = (HighLevelSimpleClientImpl) plugin.pluginContext.hlsc;
+			//HighLevelSimpleClientImpl hlsc = (HighLevelSimpleClientImpl) plugin.pluginContext.hlsc;
 			FreenetURI fetchUri = block.uri.clone();
 			block.bInsertDone = false;
 			block.bInsertSuccessfull = false;
@@ -65,6 +67,7 @@ public class SingleInsert extends SingleJob {
 				}
 			}
 
+			Segment segment = reinserter.vSegments.get(block.nSegmentId);
 			// insert
 			if (block.bucket != null) {
 				FreenetURI insertUri = null;
@@ -72,15 +75,21 @@ public class SingleInsert extends SingleJob {
 				try {
 
 					InsertBlock insertBlock = new InsertBlock(block.bucket, null, fetchUri);
-					InsertContext insertContext = hlsc.getInsertContext(true);
-					if (cCompressor != null || !cCompressor.equals("none")) {
+					InsertContext insertContext = plugin.hlsc.getInsertContext(true);
+					if (cCompressor != null && !cCompressor.equals("none")) {
 						insertContext.compressorDescriptor = cCompressor;
 					}
 					if (aExtra[1] == 2) // switch to crypto_algorithm  2 (instead of using the new one that is introduced since 1416)
 					{
 						insertContext.setCompatibilityMode(InsertContext.CompatibilityMode.COMPAT_1255);
 					}
-					insertUri = hlsc.insert(insertBlock, false, null, false, (short) 2, insertContext, fetchUri.getCryptoKey());
+					//don't triple-insert blocks.
+					insertContext.extraInsertsSingleBlock = 0;
+
+					//re-insert top blocks and single key files at the highest priority, all others at medium prio.
+					short prio = segment.size() == 1 ? (short) 1 : (short) 3;
+
+					insertUri = plugin.hlsc.insert(insertBlock, false, null, false, prio, insertContext, fetchUri.getCryptoKey());
 
 					// insert finished
 					if (!reinserter.isActive()) {
@@ -107,7 +116,6 @@ public class SingleInsert extends SingleJob {
 			}
 
 			// reg success if single-block-segment
-			Segment segment = reinserter.vSegments.get(block.nSegmentId);
 			if (segment.size() == 1) {
 				reinserter.updateSegmentStatistic(segment, block.bInsertSuccessfull);
 			}

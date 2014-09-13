@@ -18,8 +18,6 @@
  */
 package keepalive;
 
-import java.util.Vector;
-
 public class Segment {
 
 	private Reinserter reinserter;
