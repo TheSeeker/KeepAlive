@@ -778,7 +778,7 @@ public class Reinserter extends Thread {
 					SplitFileFetcher sf = new SplitFileFetcher(metadata, cb, vsg,
 							fetchContext, true, decompressors,
 							metadata.getClientMetadata(), 0L, metadata.topDontCompress,
-							metadata.topCompatibilityMode, false, metadata.getResolvedURI(),
+							metadata.topCompatibilityMode.code, false, metadata.getResolvedURI(),
 							true, clientContext);
 					sf.schedule(clientContext);
 					//fetchWaiter.waitForCompletion();
