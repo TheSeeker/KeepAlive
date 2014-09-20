@@ -1032,59 +1032,67 @@ public class Reinserter extends Thread {
 			if (cManifestName == null) {
 				cManifestName = ".metadata";
 			}
-			// unzip and construct metadata
-			try {
-
-				InputStream inStream = null;
-				String cEntryName = null;
-
-				// get archive stream (try if archive type unknown)
-				if (archiveType == ARCHIVE_TYPE.TAR || archiveType == null) {
-					try {
-						inStream = new TarInputStream(fetchedDataStream);
-						cEntryName = ((TarInputStream) inStream).getNextEntry().getName();
-						archiveType = ARCHIVE_TYPE.TAR;
-					} catch (IOException e) {
-					}
-				}
-				if (archiveType == ARCHIVE_TYPE.ZIP || archiveType == null) {
-					try {
-						inStream = new ZipInputStream(fetchedDataStream);
-						cEntryName = ((ZipInputStream) inStream).getNextEntry().getName();
-						archiveType = ARCHIVE_TYPE.ZIP;
-					} catch (IOException e) {
-					}
-				}
-
-				// construct metadata
-				while (inStream != null && cEntryName != null) {
-					if (cEntryName.equals(cManifestName)) {
-						byte[] buf = new byte[32768];
-						ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-						int nBytes;
-						while ((nBytes = inStream.read(buf)) > 0) {
-							outStream.write(buf, 0, nBytes);
-						}
-						outStream.close();
-						metadata = Metadata.construct(outStream.toByteArray());
-						break;
-					}
-					if (archiveType == ARCHIVE_TYPE.TAR) {
-						cEntryName = ((TarInputStream) inStream).getNextEntry().getName();
-					} else {
-						cEntryName = ((ZipInputStream) inStream).getNextEntry().getName();
-					}
-				}
-
-			} catch (MetadataParseException | IOException e) {
-			}
-			// if not tar or zip then try to construct metadata directly
-			if (metadata == null) {
+			
+			if(archiveType == null) {
+				//try to construct metadata directly
 				try {
 					metadata = Metadata.construct(aData);
 				} catch (MetadataParseException e) {
 				}
 			}
+			if (metadata == null) {
+			// unzip and construct metadata
+			
+				try {
+
+					InputStream inStream = null;
+					String cEntryName = null;
+
+					// get archive stream (try if archive type unknown)
+					if (archiveType == ARCHIVE_TYPE.TAR || archiveType == null) {
+						try {
+							inStream = new TarInputStream(fetchedDataStream);
+							cEntryName = ((TarInputStream) inStream).getNextEntry().getName();
+							archiveType = ARCHIVE_TYPE.TAR;
+						} catch (Exception e) {
+							//FIXME: log something here if archivetype != null
+						}
+					}
+					if (archiveType == ARCHIVE_TYPE.ZIP || archiveType == null) {
+						try {
+							inStream = new ZipInputStream(fetchedDataStream);
+							cEntryName = ((ZipInputStream) inStream).getNextEntry().getName();
+							archiveType = ARCHIVE_TYPE.ZIP;
+						} catch (Exception e) {
+							//FIXME: log something here if archivetype != null
+						}
+					}
+
+					// construct metadata
+					while (inStream != null && cEntryName != null) {
+						if (cEntryName.equals(cManifestName)) {
+							byte[] buf = new byte[32768];
+							ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+							int nBytes;
+							while ((nBytes = inStream.read(buf)) > 0) {
+								outStream.write(buf, 0, nBytes);
+							}
+							outStream.close();
+							metadata = Metadata.construct(outStream.toByteArray());
+							break;
+						}
+						if (archiveType == ARCHIVE_TYPE.TAR) {
+							cEntryName = ((TarInputStream) inStream).getNextEntry().getName();
+						} else {
+							cEntryName = ((ZipInputStream) inStream).getNextEntry().getName();
+						}
+					}
+
+				} catch (Exception e) {
+					//FIXME: log something here if archivetype != null
+				}
+			}
+
 			if (metadata != null) {
 				if (archiveType != null) {
 					cManifestName += " (" + archiveType.name() + ")";
@@ -1144,11 +1152,11 @@ public class Reinserter extends Thread {
 
 			uri = normalizeUri(uri);
 			if (mManifestURIs.containsKey(uri)) {
-				log("-> already registered", nLevel, 2);
+				log("-> already registered manifest", nLevel, 2);
 			} else {
 				mManifestURIs.put(uri, null);
 				if (nLevel != -1) {
-					log("-> registered", nLevel, 2);
+					log("-> registered manifest", nLevel, 2);
 				}
 			}
 
@@ -1168,7 +1176,7 @@ public class Reinserter extends Thread {
 
 					// check if uri already reinserted during this session
 				} else if (mBlocks.containsKey(normalizeUri(uri))) {
-					log("-> already registered", nLevel, 2);
+					log("-> already registered block", nLevel, 2);
 
 					// register
 				} else {
@@ -1178,7 +1186,7 @@ public class Reinserter extends Thread {
 					}
 					uri = normalizeUri(uri);
 					mBlocks.put(uri, new Block(uri, nParsedSegmentId, ++nParsedBlockId, bIsDataBlock));
-					log("-> registered", nLevel, 2);
+					log("-> registered block", nLevel, 2);
 				}
 
 			}
