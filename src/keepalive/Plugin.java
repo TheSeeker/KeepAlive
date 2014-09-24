@@ -31,7 +31,7 @@ public class Plugin extends PluginBase {
 
 	public Plugin() {
 		super("KeepAlive", "Keep Alive", "prop.txt");
-		setVersion("0.3.3.2-TS");
+		setVersion("0.3.3.3-TS");
 		addPluginToMenu("Keep Alive", "Reinsert sites and files in the background");
 		clearLog();
 	}
@@ -52,7 +52,7 @@ public class Plugin extends PluginBase {
 				for (int i = 0; i < aIds.length; i++) {
 					setProp("blocks_" + aIds[i], "?");
 				}
-				setProp("version", "0.3.3.2-TS");
+				setProp("version", "0.3.3.3-TS");
 			}
 
 			// initial values
@@ -159,8 +159,12 @@ public class Plugin extends PluginBase {
 			// available segments
 			int nAvailableSegments = 0;
 			String cAvailableSegments = getProp("success_segments_" + nSiteId);
+			int lastTriedSegment = getIntProp("segment_" + nSiteId);
 			if (cAvailableSegments != null) {
-				for (int i = 0; i <= getIntProp("segment_" + nSiteId); i++) {
+				if (lastTriedSegment >= cAvailableSegments.length()) {
+					log("Plugin.getSuccessValues(): List of success_segments too short for nSiteId " + nSiteId + "! " + cAvailableSegments.length() + " vs " + lastTriedSegment + 1, 0);
+				}
+				for (int i = 0; i <= lastTriedSegment && i < cAvailableSegments.length(); i++) {
 					if (cAvailableSegments.charAt(i) == '1') {
 						nAvailableSegments++;
 					}
