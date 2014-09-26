@@ -33,9 +33,9 @@ import freenet.client.MetadataParseException;
 import freenet.client.async.ClientBaseCallback;
 import freenet.client.async.ClientContext;
 import freenet.client.async.ClientGetState;
+import freenet.client.async.ClientRequestSchedulerGroup;
 import freenet.client.async.ClientRequester;
 import freenet.client.async.GetCompletionCallback;
-import freenet.client.async.KeyListenerConstructionException;
 import freenet.client.async.SplitFileFetcher;
 import freenet.client.async.SplitFileSegmentKeys;
 import freenet.client.async.StreamGenerator;
@@ -63,7 +63,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.zip.ZipInputStream;
 import org.apache.tools.tar.TarInputStream;
-import pluginbase.PageBase;
 
 public class Reinserter extends Thread {
 
@@ -940,6 +939,11 @@ public class Reinserter extends Thread {
 	private static class VerySimpleGetter extends ClientRequester {
 
 		private final FreenetURI uri;
+
+		@Override
+		public ClientRequestSchedulerGroup getSchedulerGroup() {
+			return null;
+		}
 
 		private static class FakeCallback implements ClientBaseCallback {
 
