@@ -40,6 +40,7 @@ public class SingleFetch extends SingleJob {
 	@Override
 	public void run() {
 		super.run();
+        FetchResult fetchResult = null;
 		try {
 
 			// init
@@ -63,7 +64,6 @@ public class SingleFetch extends SingleJob {
 			}
 
 			// request
-			FetchResult fetchResult = null;
 			try {
 
 				log("request: " + block.uri.toString() + " (crypt=" + aExtraF[1] + ",control=" + block.uri.getExtra()[2] + ",compress=" + aExtraF[4] + "=" + cCompressorF + ")", 2);
@@ -96,6 +96,11 @@ public class SingleFetch extends SingleJob {
 		} catch (IOException e) {
 			plugin.log("SingleFetch.run(): " + e.getMessage(), 0);
 		}
+        finally{
+            if (fetchResult != null){
+                fetchResult.asBucket().free();
+            }
+        }
 	}
 
 	private class HLSCignoreStore extends HighLevelSimpleClientImpl {

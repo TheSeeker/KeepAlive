@@ -113,6 +113,7 @@ public class Reinserter extends Thread {
 
 	@Override
 	public void run() {
+        Segment segment = null;
 		try {
 
 			// init
@@ -241,7 +242,7 @@ public class Reinserter extends Thread {
 				if (nSegmentSize == 0) {
 					break;  // ready
 				}
-				Segment segment = new Segment(this, vSegments.size(), nSegmentSize);
+				segment = new Segment(this, vSegments.size(), nSegmentSize);
 				for (Block block : mBlocks.values()) {
 					if (block.nSegmentId == vSegments.size()) {
 						segment.addBlock(block);
@@ -591,6 +592,17 @@ public class Reinserter extends Thread {
 		} catch (Exception e) {
 			plugin.log("Reinserter.run(): " + e.getMessage(), 0);
 		}
+        finally {
+            if (segment != null) {
+                for (int i = 0; i < segment.dataSize(); i++) {
+                    segment.getDataBlock(i).bucket.free();
+                }
+                for (int i = 0; i < segment.checkSize(); i++) {
+                    segment.getCheckBlock(i).bucket.free();
+                }
+            } else {
+            }
+        }
 	}
 
 	private void checkFinishedSegments() {

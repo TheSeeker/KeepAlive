@@ -73,7 +73,6 @@ public class SingleInsert extends SingleJob {
 				FreenetURI insertUri;
 
 				try {
-
 					InsertBlock insertBlock = new InsertBlock(block.bucket, null, fetchUri);
 					InsertContext insertContext = plugin.hlsc.getInsertContext(true);
 					if (cCompressorI != null && !cCompressorI.equals("none")) {
@@ -128,5 +127,10 @@ public class SingleInsert extends SingleJob {
 		} catch (Exception e) {
 			plugin.log("SingleInsert.run(): " + e.getMessage(), 0);
 		}
+        finally {
+            if (block.bucket != null) {
+                block.bucket.free();
+            }            
+        }
 	}
 }
