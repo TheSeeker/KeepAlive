@@ -97,7 +97,7 @@ public class SingleFetch extends SingleJob {
 			plugin.log("SingleFetch.run(): " + e.getMessage(), 0);
 		}
         finally{
-            if (fetchResult != null){
+            if (fetchResult != null && fetchResult.asBucket() != null) {
                 fetchResult.asBucket().free();
             }
         }

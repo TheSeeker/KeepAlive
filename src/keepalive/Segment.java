@@ -109,6 +109,9 @@ public class Segment {
 
 		// free blocks (especially buckets)
 		if (bFinished) {
+            for (int i = 0; i < nSize; i++) {
+                aBlocks[i].bucket.free();
+            }
 			aBlocks = null;
 		}
 
