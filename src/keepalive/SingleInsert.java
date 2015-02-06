@@ -127,10 +127,5 @@ public class SingleInsert extends SingleJob {
 		} catch (Exception e) {
 			plugin.log("SingleInsert.run(): " + e.getMessage(), 0);
 		}
-        finally {
-            if (block.bucket != null) {
-                block.bucket.free();
-            }            
-        }
 	}
 }
