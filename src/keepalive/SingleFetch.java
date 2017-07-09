@@ -34,6 +34,7 @@ public class SingleFetch extends SingleJob {
 	public SingleFetch(Reinserter reinserter, Block block, boolean bPersistenceCheck) {
 		super(reinserter, "fetch", block);
 
+		this.setName("KeepAlive SingleFetch");
 		this.bPersistenceCheck = bPersistenceCheck;
 	}
 

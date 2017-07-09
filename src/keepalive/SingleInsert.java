@@ -28,6 +28,7 @@ public class SingleInsert extends SingleJob {
 
 	public SingleInsert(Reinserter reinserter, Block block) {
 		super(reinserter, "insertion", block);
+		this.setName("KeepAlive SingleInsert");
 	}
 
 	@Override

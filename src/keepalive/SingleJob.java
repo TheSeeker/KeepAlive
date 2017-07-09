@@ -35,6 +35,7 @@ public class SingleJob extends Thread {
 		this.cJobType = cJobType;
 		this.block = block;
 		this.plugin = reinserter.plugin;
+		this.setName("KeepAlive SingleJob");
 
 		// init
 		reinserter.nActiveSingleJobCount++;

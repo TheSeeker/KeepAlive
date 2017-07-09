@@ -181,6 +181,7 @@ public class Connection {
 			nodeReader = new NodeReader(nodeInputStream);
 			Thread nodeReaderThread = new Thread(nodeReader);
 			nodeReaderThread.setDaemon(true);
+			nodeReaderThread.setName("KeepAlive FCP Thread");
 			nodeReaderThread.start();
 			ClientHello clientHello = new ClientHello();
 			clientHello.setName(name);

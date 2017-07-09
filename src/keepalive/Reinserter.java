@@ -96,6 +96,7 @@ public class Reinserter extends Thread {
 
 			this.plugin = plugin;
 			this.nSiteId = nSiteId;
+			this.setName("KeepAlive ReInserter");
 
 			// stop previous reinserter, start this one
 			plugin.stopReinserter();
