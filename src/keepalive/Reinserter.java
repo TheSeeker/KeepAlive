@@ -1358,7 +1358,7 @@ public class Reinserter extends Thread {
 				}
 				reinserter.terminate();
 				long nStopCheckBegin = System.currentTimeMillis();
-				while (reinserter.isAlive() && nStopCheckBegin > (System.currentTimeMillis() - (30 * 60 * 60 * 1000))) {
+				while (reinserter.isAlive() && nStopCheckBegin > (System.currentTimeMillis() - (10 * 60 * 1000))) {
 					try {
 						wait(100);
 					} catch (InterruptedException e) {
@@ -1367,7 +1367,7 @@ public class Reinserter extends Thread {
 				if (!reinserter.isAlive()) {
 					plugin.log("reinserter stopped (" + nSiteId + ")");
 				} else {
-					plugin.log("reinserter not stopped - stop was indicated 30 minutes before (" + nSiteId + ")");
+					plugin.log("reinserter not stopped - stop was indicated 10 minutes before (" + nSiteId + ")");
 				}
 
 			} catch (InterruptedException e) {
