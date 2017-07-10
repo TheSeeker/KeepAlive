@@ -1345,14 +1345,9 @@ public class Reinserter extends Thread {
 		}
 
 		@Override
-		public String toString() {
-			return "Keepalive - ActivityGuard";
-		}
-
-		@Override
 		public synchronized void run() {
 			try {
-
+				this.setName("Keepalive - ActivityGuard");
 				while (reinserter.isActive()) {
 					wait(1000);
 				}
