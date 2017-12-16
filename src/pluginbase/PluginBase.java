@@ -418,8 +418,9 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 
 				try (FileOutputStream stream = new FileOutputStream(newFile)) {
 					prop.store(stream, cTitle);
+					stream.flush();
 				}
-
+				
 				if (oldFile.exists()) {
 					oldFile.delete();
 				}
