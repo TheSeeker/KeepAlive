@@ -1,0 +1,34 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile files('../fred/build/libs/freenet.jar')
+    compile group: 'org.apache.ant', name: 'ant', version: '1.10.5'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/'
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+                'Plugin-Main-Class': 'keepalive.Plugin')
+    }
+}
+
+processResources {
+    from ('src/keepalive/html/') {
+        into 'keepalive/html'
+    }
+}
