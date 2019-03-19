@@ -507,7 +507,7 @@ public class Reinserter extends Thread {
 			}
 
 			// wait for finishing top block, if it was fetched.
-			if (vSegments.get(0) != null) {
+			if (!vSegments.isEmpty() && vSegments.get(0) != null) {
 				while (!(vSegments.get(0).isFinished())) {
 					synchronized (this) {
 						this.wait(1000);
