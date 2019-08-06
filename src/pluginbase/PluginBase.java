@@ -304,9 +304,17 @@ abstract public class PluginBase implements FredPlugin, FredPluginThreadless, Fr
 
 			initLog(cFilename);
 			RandomAccessFile file = mLogFiles.get(cFilename);
-			file.seek(0);
-			StringBuilder buffer;
-			buffer = new StringBuilder();
+			int MAX_LOG_LENGTH = 2_000_000; // around 10k lines
+			StringBuilder buffer = new StringBuilder();
+			long fileLength = file.length();
+			if (fileLength > MAX_LOG_LENGTH) {
+				long skip = fileLength - MAX_LOG_LENGTH;
+				file.seek(skip);
+				file.readLine();
+				buffer.append("log contains ").append(skip).append(" preceding bytes (~").append(skip / 200).append(" lines)").append("\n");
+			} else {
+				file.seek(0);
+			}
 			String cLine;
 			while ((cLine = file.readLine()) != null) {
 				buffer.append(cLine).append("\n");
